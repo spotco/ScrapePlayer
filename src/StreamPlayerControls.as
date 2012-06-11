@@ -1,4 +1,5 @@
 package  {
+	import flash.display.InteractiveObject;
 	import flash.events.EventDispatcher;
 	import flash.events.KeyboardEvent;
 	import flash.text.TextField;
@@ -11,13 +12,16 @@ package  {
 		private static var IN_HEI = 40;
 		
 		private var output_log:TextField;
+		private var temp_out_line:TextField;
 		private var input_line:TextField;
 		private var repl:StreamPlayerREPLInterface;
 		
 		public function StreamPlayerControls(p:StreamPlayer) {
-			output_log = UILib.MAKE_DYN_TEXT(PAD, PAD, StreamPlayer.WID-PAD*2, OUT_HEI);
-			input_line = UILib.MAKE_INPUT_TEXT(PAD, OUT_HEI + PAD*2, StreamPlayer.WID-PAD*2, IN_HEI);
+			output_log = UILib.MAKE_DYN_TEXT(PAD, PAD, StreamPlayer.WID - PAD * 2, OUT_HEI);
+			temp_out_line = UILib.MAKE_DYN_TEXT(PAD, OUT_HEI + PAD, StreamPlayer.WID-PAD*2, IN_HEI);
+			input_line = UILib.MAKE_INPUT_TEXT(PAD, OUT_HEI + PAD*1.5 + IN_HEI, StreamPlayer.WID-PAD*2, IN_HEI);
 			p.addChild(output_log);
+			p.addChild(temp_out_line);
 			p.addChild(input_line);
 			
 			repl = new StreamPlayerREPLInterface();
@@ -31,7 +35,13 @@ package  {
 			repl.addEventListener(SPEvt.CLEAR_SCREEN_EVT, clear_screen_evth);
 			repl.addEventListener(SPEvt.PRINT_EVT, print_to_screen_evth);
 			repl.addEventListener(SPEvt.HELP_EVT, help_evth);
-			repl.addEventListener(SPEvt.LOAD_SITE_EVT, load_site_evth);
+			repl.addEventListener(SPEvt.LOAD_SITE_EVT, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LOAD_SITE_EVT,e.info)); } );
+			repl.addEventListener(SPEvt.STOP_CRAWLER, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.STOP_CRAWLER, e.info)); } );
+			repl.addEventListener(SPEvt.PLAY_RANDOM_SONG, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.PLAY_RANDOM_SONG,e.info)); } );
+		}
+		
+		public function get_input_focus_object():InteractiveObject {
+			return this.input_line;
 		}
 		
 		public function clear_screen() {
@@ -43,6 +53,10 @@ package  {
 			output_log.appendText(msg);
 			output_log.appendText("\n");
 			output_log.scrollV = output_log.maxScrollV;
+		}
+		
+		public function msg_to_tmp(msg:String) {
+			temp_out_line.text = msg;
 		}
 		
 		private function terminal_input():void {
@@ -81,10 +95,6 @@ package  {
 		private function help_evth(e:SPEvt) {
 			clear_screen();
 			msg_to_screen(StreamPlayerREPLInterface.HELP_TEXT);
-		}
-		
-		private function load_site_evth(e:SPEvt) {
-			dispatchEvent(new SPEvt(SPEvt.LOAD_SITE_EVT,e.info));
 		}
 		
 	}

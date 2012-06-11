@@ -8,9 +8,11 @@ package  {
 		
 		public static var HELP_TEXT = 
 			"KEYWORD LIST:\n" +
-			"LOAD url depth(optional)\n" +
+			"LOAD url depth(optional) params[vx](optional)\n" +
+			"STOP\n" +
 			"PRINT msg\n" +
-			"CLEAR"
+			"CLEAR\n" +
+			"PLAY";
 		;
 		
 		public function eval(msg:String) {
@@ -34,8 +36,16 @@ package  {
 			this.dispatchEvent(new SPEvt(SPEvt.HELP_EVT));
 		}
 		
-		public function load(url:String, depth:Number = 1) {
-			this.dispatchEvent(new SPEvt(SPEvt.LOAD_SITE_EVT, { url:url, depth:depth } ));
+		public function stop() {
+			this.dispatchEvent(new SPEvt(SPEvt.STOP_CRAWLER));
+		}
+		
+		public function play() {
+			this.dispatchEvent(new SPEvt(SPEvt.PLAY_RANDOM_SONG));
+		}
+		
+		public function load(url:String, depth:Number = 5, opts:String = "") {
+			this.dispatchEvent(new SPEvt(SPEvt.LOAD_SITE_EVT, { url:url, depth:depth, opts:opts } ));
 		}
 		
 	}

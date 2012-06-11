@@ -1,20 +1,59 @@
 package  {
-	public class StreamPlayerMusicLib {
+	import flash.events.EventDispatcher;
+	import flash.events.ProgressEvent;
+	import flash.media.Sound;
+	import flash.media.SoundChannel;
+	import flash.media.SoundLoaderContext;
+	import flash.net.URLRequest;
+	
+	public class StreamPlayerMusicLib extends EventDispatcher {
 		
-		public function StreamPlayerMusicLib() {
-			
+		private var sc:SoundChannel;
+		
+		private var songs:Array = new Array();
+		
+		public function add_song(url:String, filename:String) {
+			songs.push(new FileData(url, filename));
 		}
 		
-		private function play_sound():void {
-			var s:Sound = new Sound(); 
-			var req:URLRequest = new URLRequest("http://ocremix.org/remix/OCR02286/");
-			s.addEventListener(HTTPStatusEvent.HTTP_STATUS, function(e:HTTPStatusEvent) { trace(e); } );
-			var context:SoundLoaderContext = new SoundLoaderContext(2000, true); 
-			s.addEventListener(ProgressEvent.PROGRESS, function(e:ProgressEvent) { trace(e.toString()); } );
-			s.load(req, context); 
-			s.play();
+		public function get_num_songs():int {
+			return songs.length;
+		}
+		
+		public function play_random():String {
+			if (sc) {
+				sc.stop();
+			}
+			//songs.forEach(function(e) {
+				//trace(e.url);
+			//});
+			var tar:FileData = songs[Math.floor(Math.random()*songs.length)];
+			//trace("streaming: " + tar.url);
+			stream(tar.url,tar.filename);
+			return tar.filename;
+		}
+		
+		private function stream(url:String, filename:String) {
+			var req:URLRequest = new URLRequest(url);
+			var con:SoundLoaderContext = new SoundLoaderContext(2000, false);
+			var sound:Sound = new Sound();
+			
+			sound.load(req, con);
+			sound.addEventListener(ProgressEvent.PROGRESS, function(e:ProgressEvent) { 
+				dispatchEvent(new SPEvt(SPEvt.SONG_STREAMING, { progress: Math.floor((Number(e.bytesLoaded) / Number(e.bytesTotal))*100), filename:filename } ));
+			});
+			sc = sound.play();
 		}
 		
 	}
 
+}
+
+internal class FileData {
+	public var url:String;
+	public var filename:String;
+	public function FileData(url:String, filename:String) {
+		this.url = url;
+		this.filename = filename;
+	}
 }

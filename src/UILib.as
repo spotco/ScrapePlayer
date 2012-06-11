@@ -41,6 +41,7 @@ package  {
 			ntx.x = x;
 			ntx.y = y;
 			ntx.embedFonts = true;
+			//ntx.border = true;
 			ntx.antiAliasType = AntiAliasType.ADVANCED;
 			return ntx;
 		}
