@@ -32,6 +32,9 @@ package  {
 				}
 			});
 			
+			input_line.background = true;
+			input_line.backgroundColor = 0xDDDDDD;
+			
 			repl.addEventListener(SPEvt.CLEAR_SCREEN_EVT, clear_screen_evth);
 			repl.addEventListener(SPEvt.PRINT_EVT, print_to_screen_evth);
 			repl.addEventListener(SPEvt.HELP_EVT, help_evth);

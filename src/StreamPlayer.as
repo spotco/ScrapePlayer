@@ -47,7 +47,9 @@ package  {
 			});
 			
 			view.msg_to_screen(WELCOME_MESSAGE);
-			this.addEventListener(Event.ADDED_TO_STAGE, function() { stage.focus = view.get_input_focus_object(); } );
+			this.addEventListener(Event.ADDED_TO_STAGE, function() { 
+				stage.focus = view.get_input_focus_object(); 
+			});
 		}
 		
 		private function load_site_evth(e:SPEvt) {
@@ -55,8 +57,9 @@ package  {
 			var depth:Number = e.info.depth;
 			var verbose:Boolean = e.info.opts.indexOf("v") != -1;
 			var cross_site:Boolean = e.info.opts.indexOf("x") != -1;
+			var proxy:Boolean = e.info.opts.indexOf("p") != -1;
 			
-			crawler.start_crawl(url, depth, {verbose:verbose, cross_site:cross_site});
+			crawler.start_crawl(url, depth, {verbose:verbose, cross_site:cross_site, proxy:proxy});
 		}
 		
 		private function stop_crawler_evth(e:SPEvt) {

@@ -67,7 +67,7 @@ package com.adobe.net
 	 * documation on protected members and protected fuctions.</p>
 	 * 
 	 * @langversion ActionScript 3.0
-	 * @playerversion Flash 9.0
+	 * @playerversion Flash 9.0 
 	 */
 	public class URI
 	{	
@@ -280,7 +280,7 @@ package com.adobe.net
 					// we probably parsed a C:\ type path or no scheme
 					return false;
 				}
-				else if (verifyScheme(_scheme) == false)
+				else if (verifyAlpha(_scheme) == false)
 					return false;  // Scheme contains bad characters
 			}
 			
@@ -432,13 +432,6 @@ package com.adobe.net
 					// Trim off the "//"
 					baseURI = baseURI.substr(2, baseURI.length - 2);
 				}
-				else if (_scheme == "app" || _scheme == "app-storage") {
-					/* This is an AIR local file URI scheme. It doesn't appear to be heirarchical
-					due to the single slash, but we can treat it as such. It's really
-					a fancy file:// URI relative to one of the special directories used
-					by AIR for local data storage. */
-					_nonHierarchical = "";
-				}
 				else
 				{
 					// This is a non-hierarchical URI like "mailto:bob@mail.com"
@@ -574,27 +567,20 @@ package com.adobe.net
 		
 		/**
 		 * @private
-		 * Checks if the given string only contains characters
-		 * valid for a URI scheme as per RFC 3986.
-		 * 
-		 * http://tools.ietf.org/html/rfc3986
-		 * 
-		 * Must begin with a letter, and them contain any number
-		 * of letters, numbers, or "+", "-", or "."
+		 * Checks if the given string only contains a-z or A-Z.
 		 */
-		public static function verifyScheme(str:String) : Boolean
+		protected function verifyAlpha(str:String) : Boolean
 		{
-			var pattern:RegExp = /^[a-z][a-z0-9.+\-]*/;
+			var pattern:RegExp = /[^a-z]/;
 			var index:int;
 			
 			str = str.toLowerCase();
 			index = str.search(pattern);
 			
-			if (index != -1) {
+			if (index == -1)
 				return true;
-			}
-			
-			return false;
+			else
+				return false;
 		}
 		
 		/**
@@ -644,11 +630,12 @@ package com.adobe.net
 		 * @return true if this URI represents a directory resource, false
 		 * if this URI represents a file resource.
 		 */
-		public function isDirectory() : Boolean {
-			if (_path.length == 0) {
+		public function isDirectory() : Boolean
+		{
+			if (_path.length == 0)
 				return false;
-			}
-		
+			//trace(_path);
+			//trace("last char:"+_path.charAt(path.length - 1));
 			return (_path.charAt(_path.length - 1) == '/');
 		}
 		
@@ -656,7 +643,8 @@ package com.adobe.net
 		/**
 		 * Is this URI a hierarchical URI? URI's can be  
 		 */
-		public function isHierarchical() : Boolean { 
+		public function isHierarchical() : Boolean
+		{ 
 			return hierState;
 		}
 				
@@ -830,7 +818,7 @@ package com.adobe.net
 		 * is used.  This URI class supports the common "param=value"
 		 * style query syntax via the get/setQueryValue() and
 		 * get/setQueryByMap() functions.  Those functions should be used
-		 * instead if the common syntax is being used.</p>
+		 * instead if the common syntax is being used.
 		 * 
 		 * <p>The URI RFC does not specify any particular
 		 * syntax for the query part of a URI.  It is intended to allow
@@ -838,7 +826,7 @@ package com.adobe.net
 		 * However, most systems have standardized on the typical CGI
 		 * format:</p>
 		 * 
-		 * <listing>http://site.com/script.php?param1=value1&amp;param2=value2</listing>
+		 * <listing>http://site.com/script.php?param1=value1&param2=value2</listing>
 		 * 
 		 * <p>This class has specific support for this query syntax</p>
 		 * 
@@ -992,8 +980,8 @@ package com.adobe.net
 			// We can just use the default AS function.  It seems to
 			// decode everything correctly
 			var unescaped:String;
-			//unescaped = decodeURIComponent(escaped);
-			unescaped = unescape(escaped); //NO YOU FAGGOT HTTP URLS ARE IN ASCII NOT UTF8 FUCK YOU
+			trace(unescaped);
+			unescaped = decodeURIComponent(escaped);
 			return unescaped;
 		}
 		
@@ -1016,7 +1004,7 @@ package com.adobe.net
 		 */
 		static public function fastEscapeChars(unescaped:String, bitmap:URIEncodingBitmap) : String
 		{
-			/*var escaped:String = "";
+			var escaped:String = "";
 			var c:String;
 			var x:int, i:int;
 			
@@ -1038,11 +1026,7 @@ package com.adobe.net
 				escaped += c;
 			}
 			
-			trace("fastescape:");
-			trace(escaped);
-			
-			return escaped;*/
-			return escape(unescaped); //WHY THE KIKES DID YOU ROLL YOUR OWN ESCAPE FUNCTION
+			return escaped;
 		}
 
 		
@@ -1067,7 +1051,7 @@ package com.adobe.net
 		/**
 		 * Get the value for the specified named in the query part.  This
 		 * assumes the query part of the URI is in the common
-		 * "name1=value1&amp;name2=value2" syntax.  Do not call this function
+		 * "name1=value1&name2=value2" syntax.  Do not call this function
 		 * if you are using a custom query syntax.
 		 * 
 		 * @param name	name of the query value to get.
@@ -1246,7 +1230,7 @@ package com.adobe.net
 		 * intended to be called on each individual "name" and "value"
 		 * in the query making sure that nothing in the name or value
 		 * strings contain characters that would conflict with the query
-		 * syntax (e.g. '=' and '&amp;').
+		 * syntax (e.g. '=' and '&').
 		 * 
 		 * @param unescaped		unescaped string that is to be escaped.
 		 * 
@@ -1287,11 +1271,7 @@ package com.adobe.net
 			if (this == null)
 				return "";
 			else
-				var tmp:String = toStringInternal(false);
-				tmp = tmp.replace("%28", "(");
-				tmp = tmp.replace("%29", ")");
-				tmp = tmp.replace("%26amp%3B", "&");
-				return tmp;
+				return toStringInternal(false);
 		}
 		
 		/**
@@ -1475,16 +1455,14 @@ package com.adobe.net
 		
 			thisExtension = getExtension(true);
 		
-			if (thisExtension == "") {
+			if (thisExtension == "")
 				return false;
-			}
 		
 			// Compare the extensions ignoring case
-			if (compareStr(thisExtension, extension, false)) {
+			if (compareStr(thisExtension, extension, false) == 0)
+				return false;
+			else
 				return true;
-			}
-			
-			return false;
 		}
 		
 		
@@ -1492,7 +1470,7 @@ package com.adobe.net
 		 * Get the ".xyz" file extension from the filename in the URI.
 		 * For example, if we have the following URI:
 		 * 
-		 * <listing>http://something.com/path/to/my/page.html?form=yes&amp;name=bob#anchor</listing>
+		 * <listing>http://something.com/path/to/my/page.html?form=yes&name=bob#anchor</listing>
 		 * 
 		 * <p>This will return ".html".</p>
 		 * 

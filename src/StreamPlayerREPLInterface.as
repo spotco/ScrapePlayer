@@ -8,9 +8,8 @@ package  {
 		
 		public static var HELP_TEXT = 
 			"KEYWORD LIST:\n" +
-			"LOAD url depth(optional) params[vx](optional)\n" +
+			"LOAD url depth(optional) params[vxp](optional)\n\tv--verbose   x--crosssite   p--proxy\n" +
 			"STOP\n" +
-			"PRINT msg\n" +
 			"CLEAR\n" +
 			"PLAY";
 		;

@@ -11,16 +11,19 @@ package {
 		/**
 		 * WELP IT WORKS
 		 * TODO:
+			 * -Favorites sites list
 			 * -Play songs continuously
-			 * -Add same server policy
 			 * -Play,pause,volume UI
 			 * -List all songs
 			 * -Delete songs
-			 * -Better crawling defaults
 			 * -Search songs
-			 * -Redesign UI
+			 * -Mobile UI
 		 */
 		
+		public static var PROXY_URL:String = "http://spotcos.com/misc/streamplayer/proxy.php";
+		public static var MOBILE_UI:Boolean = false;
+
+
 		public function Main():void {
 			if (stage) init();
 			else addEventListener(Event.ADDED_TO_STAGE, init);

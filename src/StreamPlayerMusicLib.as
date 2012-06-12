@@ -24,11 +24,7 @@ package  {
 			if (sc) {
 				sc.stop();
 			}
-			//songs.forEach(function(e) {
-				//trace(e.url);
-			//});
 			var tar:FileData = songs[Math.floor(Math.random()*songs.length)];
-			//trace("streaming: " + tar.url);
 			stream(tar.url,tar.filename);
 			return tar.filename;
 		}

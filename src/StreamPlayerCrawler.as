@@ -29,6 +29,7 @@ package  {
 			
 			request_sender_timer = new Timer(10);
 			request_sender_timer.addEventListener(TimerEvent.TIMER, send_top_request);
+			request_sender_timer.start();
 			
 			if (url.indexOf("http://") < 0 && url.indexOf("https://") < 0) {
 				url = "http://" + url;
@@ -55,11 +56,6 @@ package  {
 			} else if (to_visit.size != 0) {
 				var next:ToVisitNode = to_visit.dequeue() as ToVisitNode;
 				crawl(next.url, next.depth, next.opts);
-			} else {
-				request_sender_timer.stop();
-				msg_to_tmp("");
-				KILL = true;
-				msg_out("FINISHED!");
 			}
 		}
 		
@@ -76,28 +72,37 @@ package  {
 			
 			if (!curi.isDirectory() && !curi.isOfFileType("html") && !curi.isOfFileType("php")) {
 				if (curi.isOfFileType("mp3")) {
-					msg_out("MUSIC FILE: " + url);
+					if (opts.verbose) {
+						msg_out("MUSIC FILE: " + url);
+					} else {
+						msg_out("FILE: " + curi.getFilename());
+					}
 					dispatchEvent(new SPEvt(SPEvt.SONG_FOUND, { url:url, filename:curi.getFilename() } ));
 				} else {
-					//msg_out("file: "+curi.toString(), opts);
+					msg_out("FILE: " + url, opts);
 				}
 				return;
 			} else if (!opts.cross_site && url.indexOf(url_base) < 0) {
+				msg_out("CROSS SITE: " + url, opts);
 				return;
+			} else {
+				msg_out("VISITING: " + url, opts);
 			}
 			
 			msg_to_tmp( "QUEUE:("+to_visit.size+") REQUEST TO: " + url);
 						
-			//var urlRequest:URLRequest = new URLRequest(url);
+			var urlRequest:URLRequest;
 			
-			var urlRequest:URLRequest = new URLRequest("http://spotcos.com/misc/streamplayer/proxy.php");
-			urlRequest.method = flash.net.URLRequestMethod.POST;
-			var params:URLVariables = new URLVariables();
-			params.url = url;
-			params.nocache = new Date().toDateString;
-			urlRequest.data = params;
-			
-			//msg_out(urlRequest.url);
+			if (opts.proxy) {
+				var urlRequest:URLRequest = new URLRequest(Main.PROXY_URL);
+				urlRequest.method = flash.net.URLRequestMethod.POST;
+				var params:URLVariables = new URLVariables();
+				params.url = url;
+				params.nocache = new Date().toDateString;
+				urlRequest.data = params;
+			} else {
+				urlRequest = new URLRequest(url);
+			}
 			
 			var urlLoader:URLLoader = new URLLoader();
 			urlLoader.addEventListener(Event.COMPLETE, function(e:Event) {
@@ -108,7 +113,6 @@ package  {
 		}
 		
 		private function crawl_request_success(html:String, base_url:String, depth:Number, opts:Object):void {
-			trace(html);
 			var tags:Array = URLLib.html_get_tags(html);
 			var hrefs:Array = URLLib.tags_get_hrefs(tags);
 			hrefs = URLLib.filter_unique_and_valid(hrefs);
@@ -119,10 +123,6 @@ package  {
 					to_visit.enqueue(new ToVisitNode(url, depth - 1, opts));
 				}
 			} );
-			
-			if (!request_sender_timer.running) {
-				request_sender_timer.start();
-			}
 		}
 		
 		private function msg_out(msg:String, opts:Object = null) {
@@ -145,8 +145,10 @@ package  {
 			dispatcher.addEventListener(IOErrorEvent.IO_ERROR, function(e) { http_error_handle(e, opts); });
 		}
 		
-		private function http_error_handle(e,opts):void {
-			msg_out(e.text);
+		private function http_error_handle(e, opts):void {
+			if (!KILL) {
+				msg_out(e.text,opts);
+			}
 		}
 		
 	}

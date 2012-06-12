@@ -28,7 +28,7 @@
     <option loadConfig="" />
     <option optimize="True" />
     <option omitTraces="False" />
-    <option showActionScriptWarnings="True" />
+    <option showActionScriptWarnings="False" />
     <option showBindingWarnings="True" />
     <option showInvalidCSS="True" />
     <option showDeprecationWarnings="True" />
@@ -36,8 +36,8 @@
     <option strict="True" />
     <option useNetwork="True" />
     <option useResourceBundleMetadata="True" />
-    <option warnings="True" />
-    <option verboseStackTraces="False" />
+    <option warnings="False" />
+    <option verboseStackTraces="True" />
     <option linkReport="" />
     <option loadExterns="" />
     <option staticLinkRSL="True" />

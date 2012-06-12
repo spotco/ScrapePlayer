@@ -27,7 +27,6 @@ package  {
 				function(t:String, ind:int, a:Array) {
 					var base:URI = new URI(base_url);
 					base.chdir(t);
-					//trace("base: "+base+" t:"+t+" to:"+(base.toString()));
 					return base.toString();
 				}
 			);
