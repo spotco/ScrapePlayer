@@ -11,20 +11,18 @@ package {
 		/**
 		 * WELP IT WORKS
 		 * TODO:
-			 * -Favorites sites list
-			 * -Play songs continuously
-			 * -Play,pause,volume UI
-			 * -List all songs
-			 * -Delete songs
-			 * -Search songs
-			 * -Mobile UI
+			 * -Better help ui
+			 * -Multiple filetypes
 		 */
 		
-		public static var PROXY_URL:String = "http://spotcos.com/misc/streamplayer/proxy.php";
+		public static var PROXY_URL:String = "http://spotcos.com/misc/scrapeplayer/proxy.php";
+		public static var FAVLIST_URL:String = "http://spotcos.com/misc/scrapeplayer/fav.txt";
 		public static var MOBILE_UI:Boolean = false;
+		public static var LOCAL:Boolean = true;
 
 
 		public function Main():void {
+			LOCAL = loaderInfo.url.indexOf("file:") == 0;
 			if (stage) init();
 			else addEventListener(Event.ADDED_TO_STAGE, init);
 			

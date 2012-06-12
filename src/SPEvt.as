@@ -19,6 +19,15 @@ package  {
 		public static var SONG_FOUND:String = "song_found";
 		public static var PLAY_RANDOM_SONG:String = "play_random_song";
 		public static var SONG_STREAMING:String = "song_streaming";
+		public static var CHANGE_VOLUME:String = "change_volume";
+		public static var PLAY:String = "play";
+		public static var PAUSE:String = "pause"
+		public static var VOLUME:String = "volume";
+		public static var PLAY_SPECIFIC:String = "play_specific";
+		public static var LIST:String = "list";
+		public static var REMOVE:String = "remove";
+		public static var LIST_FAV:String = "list_fav";
+		public static var SONG_POS_UPDATE:String = "song_pos_update";
 		
 	}
 

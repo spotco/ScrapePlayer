@@ -93,7 +93,7 @@ package  {
 						
 			var urlRequest:URLRequest;
 			
-			if (opts.proxy) {
+			if (opts.proxy || !Main.LOCAL) {
 				var urlRequest:URLRequest = new URLRequest(Main.PROXY_URL);
 				urlRequest.method = flash.net.URLRequestMethod.POST;
 				var params:URLVariables = new URLVariables();
@@ -113,6 +113,7 @@ package  {
 		}
 		
 		private function crawl_request_success(html:String, base_url:String, depth:Number, opts:Object):void {
+			//trace(html);
 			var tags:Array = URLLib.html_get_tags(html);
 			var hrefs:Array = URLLib.tags_get_hrefs(tags);
 			hrefs = URLLib.filter_unique_and_valid(hrefs);

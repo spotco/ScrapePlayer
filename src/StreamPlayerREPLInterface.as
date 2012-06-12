@@ -7,11 +7,15 @@ package  {
 		public var prototype:*;
 		
 		public static var HELP_TEXT = 
-			"KEYWORD LIST:\n" +
+			"KEYWORD LIST:\n\n" +
 			"LOAD url depth(optional) params[vxp](optional)\n\tv--verbose   x--crosssite   p--proxy\n" +
-			"STOP\n" +
+			"STOPLOAD\n" +
 			"CLEAR\n" +
-			"PLAY";
+			"PLAY\n" +
+			"PLAYF \"query\"\n" +
+			"PAUSE\n" +
+			"RANDOM\n" +
+			"DELETE \"query\"\n";
 		;
 		
 		public function eval(msg:String) {
@@ -21,6 +25,18 @@ package  {
 				print("Invalid command. ''HELP'' for command list.");
 				trace(e.message);
 			}
+		}
+		
+		public function list() {
+			this.dispatchEvent(new SPEvt(SPEvt.LIST));
+		}
+		
+		public function remove(tar:String) {
+			this.dispatchEvent(new SPEvt(SPEvt.REMOVE,{tar:tar}));
+		}
+		
+		public function listfav() {
+			this.dispatchEvent(new SPEvt(SPEvt.LIST_FAV));
 		}
 		
 		public function clear() {
@@ -35,11 +51,27 @@ package  {
 			this.dispatchEvent(new SPEvt(SPEvt.HELP_EVT));
 		}
 		
-		public function stop() {
+		public function stopload() {
 			this.dispatchEvent(new SPEvt(SPEvt.STOP_CRAWLER));
 		}
 		
 		public function play() {
+			this.dispatchEvent(new SPEvt(SPEvt.PLAY));
+		}
+		
+		public function playf(tar:String) {
+			this.dispatchEvent(new SPEvt(SPEvt.PLAY_SPECIFIC, { tar:tar } ));
+		}
+		
+		public function pause() {
+			this.dispatchEvent(new SPEvt(SPEvt.PAUSE));
+		}
+		
+		public function volume(vol:Number) {
+			this.dispatchEvent(new SPEvt(SPEvt.VOLUME, {volume:vol}));
+		}
+		
+		public function random() {
 			this.dispatchEvent(new SPEvt(SPEvt.PLAY_RANDOM_SONG));
 		}
 		

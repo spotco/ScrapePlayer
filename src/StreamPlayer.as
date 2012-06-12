@@ -2,23 +2,31 @@ package  {
 	import com.adobe.net.URI;
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.net.URLLoader;
+	import flash.net.URLRequest;
 	
 	public class StreamPlayer extends Sprite {
 		
 		public static var WID:int;
 		public static var HEI:int;
 		public static var WELCOME_MESSAGE:String = "" +
-		"Welcome to ScrapePlayer 0.1!\nTry loading with spotcos.com/misc\n\n" +
+		"Welcome to ScrapePlayer 0.3!\nTODO: better mobile ui\n\nArrow keys to see your previous entries\nView my favorite working pages with ''LISTFAV''!\n\n" +
 		"Load a directory with:\n" +
-		"\tload  url  params(optional)\n\n" +
+		"\tload  (url)\n\n" +
 		"Stop scraping with:\n" +
-		"\tstop\n\n" +
-		"And play a random song with:\n" +
-		"\tplay\n\n";
+		"\tstopload\n\n" +
+		"Play a random song with:\n" +
+		"\trandom\n\n" +
+		"And \"HELP\" for a full command list.\n";
 		
 		private var view:StreamPlayerControls;
 		private var crawler:StreamPlayerCrawler;
 		private var songlib:StreamPlayerMusicLib;
+		
+		private var cur_time:String = "";
+		private var max_time:String = "";
+		private var cur_progress:String = "";
+		private var cur_name:String = "";
 		
 		public function StreamPlayer(WID:int, HEI:int) {
 			StreamPlayer.WID = WID;
@@ -27,29 +35,48 @@ package  {
 			this.songlib = new StreamPlayerMusicLib();
 			
 			this.view = new StreamPlayerControls(this);
-			this.view.addEventListener(SPEvt.LOAD_SITE_EVT, load_site_evth);
-			this.view.addEventListener(SPEvt.STOP_CRAWLER, stop_crawler_evth);
-			this.view.addEventListener(SPEvt.PLAY_RANDOM_SONG, play_song_evth);
 			
 			this.crawler = new StreamPlayerCrawler;
-			this.crawler.addEventListener(SPEvt.PRINT_EVT, function(e:SPEvt) {
-				view.msg_to_screen(e.info.msg);
-			});
-			this.crawler.addEventListener(SPEvt.MSG_TO_TMP, function(e:SPEvt) {
-				view.msg_to_tmp(e.info.msg);
-			});
-			this.crawler.addEventListener(SPEvt.SONG_FOUND, function(e:SPEvt) {
-				songlib.add_song(e.info.url, e.info.filename);
-			});
+			this.crawler.addEventListener(SPEvt.PRINT_EVT, function(e:SPEvt) { view.msg_to_screen(e.info.msg); });
+			this.crawler.addEventListener(SPEvt.MSG_TO_TMP, function(e:SPEvt) { view.msg_to_tmp(e.info.msg); });
+			this.crawler.addEventListener(SPEvt.SONG_FOUND, function(e:SPEvt) { songlib.add_song(e.info.url, e.info.filename); });
 			
-			this.songlib.addEventListener(SPEvt.SONG_STREAMING, function(e:SPEvt) {
-				view.msg_to_tmp("LOADED: "+e.info.progress+"% NOW PLAYING: "+e.info.filename);
+			this.songlib.addEventListener(SPEvt.SONG_STREAMING, function(e:SPEvt) { 
+				cur_progress = String(e.info.progress);
+				cur_name = e.info.filename;
+				view.msg_to_tmp("LOADED: "+cur_progress+"%   "+cur_time+" / "+max_time+"   PLAYING: "+cur_name);
 			});
+			this.songlib.addEventListener(SPEvt.SONG_POS_UPDATE, function(e:SPEvt) {
+				cur_time = e.info.cur;
+				max_time = e.info.max;
+				cur_name = e.info.filename;
+				view.msg_to_tmp("LOADED: "+cur_progress+"%   "+cur_time+" / "+max_time+"   PLAYING: "+cur_name);
+			});
+			this.songlib.addEventListener(SPEvt.PRINT_EVT, function(e:SPEvt) { view.msg_to_screen(e.info.msg); } );
+			
+			this.view.addEventListener(SPEvt.LOAD_SITE_EVT, load_site_evth);
+			this.view.addEventListener(SPEvt.STOP_CRAWLER, function(e){ crawler.stop() });
+			this.view.addEventListener(SPEvt.PLAY_RANDOM_SONG, function(e) { songlib.play_random() });
+			this.view.addEventListener(SPEvt.PAUSE, function(e:SPEvt) { songlib.pause(); } );
+			this.view.addEventListener(SPEvt.PLAY, function(e:SPEvt) { songlib.play(); } );
+			this.view.addEventListener(SPEvt.VOLUME, function(e:SPEvt) { songlib.volume(e.info.volume); } );
+			this.view.addEventListener(SPEvt.PLAY_SPECIFIC, function(e:SPEvt) { songlib.play_specific(e.info.tar); } );
+			this.view.addEventListener(SPEvt.LIST, function(e:SPEvt) { songlib.list_all() } );
+			this.view.addEventListener(SPEvt.REMOVE, function(e:SPEvt) { songlib.remove(e.info.tar); } );
+			this.view.addEventListener(SPEvt.LIST_FAV, function(e:SPEvt) { print_list_fav(); } );
+			
 			
 			view.msg_to_screen(WELCOME_MESSAGE);
-			this.addEventListener(Event.ADDED_TO_STAGE, function() { 
-				stage.focus = view.get_input_focus_object(); 
+			this.addEventListener(Event.ADDED_TO_STAGE, function() { stage.focus = view.get_input_focus_object(); });
+		}
+		
+		private function print_list_fav() {
+			var l:URLLoader = new URLLoader();
+			l.addEventListener(Event.COMPLETE, function(e:Event) {
+				view.clear_screen();
+				view.msg_to_screen(e.target.data);
 			});
+			l.load(new URLRequest(Main.FAVLIST_URL));
 		}
 		
 		private function load_site_evth(e:SPEvt) {
@@ -60,18 +87,6 @@ package  {
 			var proxy:Boolean = e.info.opts.indexOf("p") != -1;
 			
 			crawler.start_crawl(url, depth, {verbose:verbose, cross_site:cross_site, proxy:proxy});
-		}
-		
-		private function stop_crawler_evth(e:SPEvt) {
-			crawler.stop();
-		}
-		
-		private function play_song_evth(e:SPEvt) {
-			if (songlib.get_num_songs() == 0) {
-				view.msg_to_screen("No loaded songs.");
-			} else {
-				songlib.play_random();
-			}
 		}
 		
 	}

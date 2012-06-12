@@ -14,7 +14,12 @@ package  {
 			tf.leftMargin = 10;
 			tf.rightMargin = 10;
 			tf.font = "Menu";
-			tf.size = 15;
+			if (Main.MOBILE_UI) {
+				tf.size = 30;
+			} else {
+				tf.size = 20;
+			}
+			
 			tf.color = 0x000000;
 			return tf;
 		}
