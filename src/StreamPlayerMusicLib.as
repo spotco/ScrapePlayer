@@ -1,6 +1,7 @@
 package  {
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
+	import flash.events.IOErrorEvent;
 	import flash.events.ProgressEvent;
 	import flash.events.TimerEvent;
 	import flash.media.Sound;
@@ -139,7 +140,11 @@ package  {
 				sc.stop();
 			}
 			if (current_song && current_song.isBuffering) {
-				current_song.close();
+				try {
+					current_song.close();
+				} catch (e:Error) {
+					dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:"Error on stream close:"+e.message } ));
+				}
 			}
 			
 			this.is_playing = false;
@@ -152,6 +157,9 @@ package  {
 			var req:URLRequest = new URLRequest(url);
 			var con:SoundLoaderContext = new SoundLoaderContext(2000, false);
 			this.current_song = new Sound();
+			this.current_song.addEventListener(IOErrorEvent.IO_ERROR, function(e:IOErrorEvent) {
+				dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:"Stream error:"+e.text } ));
+			});
 			
 			this.current_song.load(req, con);
 			var self = this.current_song;
