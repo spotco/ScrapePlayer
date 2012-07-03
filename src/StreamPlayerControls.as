@@ -55,8 +55,6 @@ package  {
 			repl.addEventListener(SPEvt.REMOVE, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.REMOVE, e.info)); } );
 			repl.addEventListener(SPEvt.LIST_FAV, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LIST_FAV, e.info)); } );
 			
-			
-			
 			if (Main.MOBILE_UI) {
 				make_mobile_ui(p);
 			}

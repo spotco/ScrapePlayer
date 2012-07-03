@@ -10,7 +10,7 @@ package  {
 		public static var WID:int;
 		public static var HEI:int;
 		public static var WELCOME_MESSAGE:String = "" +
-		"Welcome to ScrapePlayer 0.3!\nTODO: better mobile ui\n\nArrow keys to see your previous entries\nView my favorite working pages with ''LISTFAV''!\n\n" +
+		"Welcome to ScrapePlayer 1.0!\nTODO: fix crashing on some disconnects\n\nArrow keys to see your previous entries\nView my favorite working pages with ''LISTFAV''!\n\n" +
 		"Load a directory with:\n" +
 		"\tload  (url)\n\n" +
 		"Stop scraping with:\n" +

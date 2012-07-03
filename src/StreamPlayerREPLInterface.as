@@ -14,8 +14,9 @@ package  {
 			"PLAY\n" +
 			"PLAYF \"query\"\n" +
 			"PAUSE\n" +
+			"VOLUME (0.0-1.0)\n" +
 			"RANDOM\n" +
-			"DELETE \"query\"\n";
+			"REMOVE query(* for all)\n";
 		;
 		
 		public function eval(msg:String) {
@@ -31,8 +32,8 @@ package  {
 			this.dispatchEvent(new SPEvt(SPEvt.LIST));
 		}
 		
-		public function remove(tar:String) {
-			this.dispatchEvent(new SPEvt(SPEvt.REMOVE,{tar:tar}));
+		public function remove(tar:String, opts:String = "") {
+			this.dispatchEvent(new SPEvt(SPEvt.REMOVE,{tar:tar, opts:opts}));
 		}
 		
 		public function listfav() {

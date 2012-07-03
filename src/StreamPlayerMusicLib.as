@@ -72,7 +72,7 @@ package  {
 		}
 		
 		public function list_all() {
-			var lister:Timer = new Timer(20);
+			var lister:Timer = new Timer(1);
 			var i:int = 0;
 			lister.addEventListener(TimerEvent.TIMER, function(e) {
 				if (i < songs.length) {
@@ -87,9 +87,15 @@ package  {
 		}
 		
 		public function remove(tar:String) {
+			if (tar == "*") {
+				songs = new Array;
+				dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:"Removed all." } ));
+				return;
+			}
 			tar = tar.toLowerCase();
 			songs = songs.filter(function(t) {
 				if (t.filename.toLowerCase().indexOf(tar) >= 0) {
+					dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:"Removed:"+t.filename } ));
 					return false;
 				} else {
 					return true;

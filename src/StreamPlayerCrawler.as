@@ -27,7 +27,7 @@ package  {
 				request_sender_timer.stop();
 			}
 			
-			request_sender_timer = new Timer(10);
+			request_sender_timer = new Timer(1);
 			request_sender_timer.addEventListener(TimerEvent.TIMER, send_top_request);
 			request_sender_timer.start();
 			
