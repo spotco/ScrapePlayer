@@ -71,14 +71,19 @@ package  {
 			}
 		}
 		
-		public function list_all() {
+		public function list(tar:String) {
 			var lister:Timer = new Timer(1);
 			var i:int = 0;
+			var ct:int = 0;
+			tar = tar.toLowerCase();
 			lister.addEventListener(TimerEvent.TIMER, function(e) {
 				if (i < songs.length) {
-					dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:songs[i].filename } ));
+					if (songs[i].filename.toLowerCase().indexOf(tar) != -1) {
+						dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:songs[i].filename } ));
+						ct++;
+					}
 				} else {
-					dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:songs.length + " songs total." } ));
+					dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:ct + " songs total." } ));
 					lister.stop();
 				}
 				i++;

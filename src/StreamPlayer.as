@@ -61,7 +61,7 @@ package  {
 			this.view.addEventListener(SPEvt.PLAY, function(e:SPEvt) { songlib.play(); } );
 			this.view.addEventListener(SPEvt.VOLUME, function(e:SPEvt) { songlib.volume(e.info.volume); } );
 			this.view.addEventListener(SPEvt.PLAY_SPECIFIC, function(e:SPEvt) { songlib.play_specific(e.info.tar); } );
-			this.view.addEventListener(SPEvt.LIST, function(e:SPEvt) { songlib.list_all() } );
+			this.view.addEventListener(SPEvt.LIST, function(e:SPEvt) { songlib.list(e.info.tar) } );
 			this.view.addEventListener(SPEvt.REMOVE, function(e:SPEvt) { songlib.remove(e.info.tar); } );
 			this.view.addEventListener(SPEvt.LIST_FAV, function(e:SPEvt) { print_list_fav(); } );
 			

@@ -10,13 +10,14 @@ package  {
 			"KEYWORD LIST:\n\n" +
 			"LOAD url depth(optional) params[vxp](optional)\n\tv--verbose   x--crosssite   p--proxy\n" +
 			"STOPLOAD\n" +
+			"LIST \"query\" (optional)\n" +
 			"CLEAR\n" +
 			"PLAY\n" +
 			"PLAYF \"query\"\n" +
 			"PAUSE\n" +
 			"VOLUME (0.0-1.0)\n" +
 			"RANDOM\n" +
-			"REMOVE query(* for all)\n";
+			"REMOVE \"query\" (* for all)\n";
 		;
 		
 		public function eval(msg:String) {
@@ -28,8 +29,8 @@ package  {
 			}
 		}
 		
-		public function list() {
-			this.dispatchEvent(new SPEvt(SPEvt.LIST));
+		public function list(tar:String = "") {
+			this.dispatchEvent(new SPEvt(SPEvt.LIST,{tar:tar}));
 		}
 		
 		public function remove(tar:String, opts:String = "") {
