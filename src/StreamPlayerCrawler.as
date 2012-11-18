@@ -15,6 +15,7 @@ package  {
 		private var request_sender_timer:Timer;
 		private var visited_hash:Object = { };
 		private var url_base:String = "";
+		private var listspeed:int = 1;
 		
 		public function start_crawl(url:String, depth:int, opts:Object) {
 			visited_hash = { };
@@ -42,20 +43,26 @@ package  {
 			crawl(url, depth, opts);
 		}
 		
+		public function set_listspeed(t:int) {
+			listspeed = t;
+		}
+		
 		public function stop() {
 			KILL = true;
 		}
 		
 		private function send_top_request(e:Event) {
-			if (KILL) {
-				request_sender_timer.stop();
-				request_sender_timer.reset();
-				request_sender_timer.removeEventListener(TimerEvent.TIMER, send_top_request);
-				msg_to_tmp("");
-				msg_out("CRAWL STOPPED.");
-			} else if (to_visit.size != 0) {
-				var next:ToVisitNode = to_visit.dequeue() as ToVisitNode;
-				crawl(next.url, next.depth, next.opts);
+			for (var i = 0; i < listspeed; i++) {
+				if (KILL) {
+					request_sender_timer.stop();
+					request_sender_timer.reset();
+					request_sender_timer.removeEventListener(TimerEvent.TIMER, send_top_request);
+					msg_to_tmp("");
+					msg_out("CRAWL STOPPED.");
+				} else if (to_visit.size != 0) {
+					var next:ToVisitNode = to_visit.dequeue() as ToVisitNode;
+					crawl(next.url, next.depth, next.opts);
+				}
 			}
 		}
 		

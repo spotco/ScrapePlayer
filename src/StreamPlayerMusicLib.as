@@ -18,6 +18,9 @@ package  {
 		private var pause_point:Number = 0.00;
 		private var current_song_filename:String = "";
 		private var vol:Number = 1.0;
+		
+		private var listspeed:int = 1;
+		
 		public var is_playing:Boolean = false;
 		
 		private var songs:Array = new Array();
@@ -31,6 +34,10 @@ package  {
 				}
 			});
 			this.sound_pos_disp_updater.start();
+		}
+		
+		public function set_listspeed(t:int) {
+			listspeed = t;
 		}
 		
 		public function add_song(url:String, filename:String) {
@@ -75,18 +82,30 @@ package  {
 			var lister:Timer = new Timer(1);
 			var i:int = 0;
 			var ct:int = 0;
+			var die:Boolean = false;
 			tar = tar.toLowerCase();
 			lister.addEventListener(TimerEvent.TIMER, function(e) {
-				if (i < songs.length) {
-					if (songs[i].filename.toLowerCase().indexOf(tar) != -1) {
-						dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:songs[i].filename } ));
-						ct++;
+				
+				for (var lpr = 0; lpr < listspeed; lpr++) {
+				
+					if (i < songs.length) {
+						
+						while (i < songs.length && songs[i].filename.toLowerCase().indexOf(tar) == -1) {
+							i++;
+						}
+						
+						if (i < songs.length && songs[i].filename.toLowerCase().indexOf(tar) != -1) {
+							dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:songs[i].filename } ));
+							ct++;
+						}
+					} else if (!die) {
+						dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:ct + " songs total." } ));
+						lister.stop();
+						die = true;
 					}
-				} else {
-					dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:ct + " songs total." } ));
-					lister.stop();
+					i++;
+				
 				}
-				i++;
 			});
 			lister.start();
 		}

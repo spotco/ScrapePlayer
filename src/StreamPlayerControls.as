@@ -54,6 +54,7 @@ package  {
 			repl.addEventListener(SPEvt.LIST, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LIST, e.info)); } );
 			repl.addEventListener(SPEvt.REMOVE, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.REMOVE, e.info)); } );
 			repl.addEventListener(SPEvt.LIST_FAV, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LIST_FAV, e.info)); } );
+			repl.addEventListener(SPEvt.LISTSPEED, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LISTSPEED, e.info)); });
 			
 			if (Main.MOBILE_UI) {
 				make_mobile_ui(p);

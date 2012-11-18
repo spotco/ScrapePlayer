@@ -28,6 +28,7 @@ package  {
 		public static var REMOVE:String = "remove";
 		public static var LIST_FAV:String = "list_fav";
 		public static var SONG_POS_UPDATE:String = "song_pos_update";
+		public static var LISTSPEED:String = "listspeed";
 		
 	}
 

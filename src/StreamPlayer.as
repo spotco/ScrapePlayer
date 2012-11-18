@@ -10,9 +10,9 @@ package  {
 		public static var WID:int;
 		public static var HEI:int;
 		public static var WELCOME_MESSAGE:String = "" +
-		"Welcome to ScrapePlayer 1.0!\nTODO: fix crashing on some disconnects\n\nArrow keys to see your previous entries\nView my favorite working pages with ''LISTFAV''!\n\n" +
+		"Welcome to ScrapePlayer 1.1!\nTry changing your LISTSPEED\n\nArrow keys to see your previous entries\nView my favorite working pages with ''LISTFAV''!\n\n" +
 		"Load a directory with:\n" +
-		"\tload  (url)\n\n" +
+		"\tload  spotcos.com/misc   (or your website of choice)\n\n" +
 		"Stop scraping with:\n" +
 		"\tstopload\n\n" +
 		"Play a random song with:\n" +
@@ -64,6 +64,16 @@ package  {
 			this.view.addEventListener(SPEvt.LIST, function(e:SPEvt) { songlib.list(e.info.tar) } );
 			this.view.addEventListener(SPEvt.REMOVE, function(e:SPEvt) { songlib.remove(e.info.tar); } );
 			this.view.addEventListener(SPEvt.LIST_FAV, function(e:SPEvt) { print_list_fav(); } );
+			this.view.addEventListener(SPEvt.LISTSPEED, function(e:SPEvt) {
+				var tar:int = int(e.info.listspeed);
+				if (tar && tar > 0) {
+					songlib.set_listspeed(tar);
+					crawler.set_listspeed(tar);
+					view.msg_to_screen("LISTSPEED set to "+tar+".");
+				} else {
+					view.msg_to_screen("Invalid LISTSPEED.");
+				}
+			});
 			
 			
 			view.msg_to_screen(WELCOME_MESSAGE);

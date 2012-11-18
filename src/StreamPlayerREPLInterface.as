@@ -17,7 +17,8 @@ package  {
 			"PAUSE\n" +
 			"VOLUME (0.0-1.0)\n" +
 			"RANDOM\n" +
-			"REMOVE \"query\" (* for all)\n";
+			"REMOVE \"query\" (* for all)\n" +
+			"LISTSPEED (1+)\n";
 		;
 		
 		public function eval(msg:String) {
@@ -79,6 +80,10 @@ package  {
 		
 		public function load(url:String, depth:Number = 5, opts:String = "") {
 			this.dispatchEvent(new SPEvt(SPEvt.LOAD_SITE_EVT, { url:url, depth:depth, opts:opts } ));
+		}
+		
+		public function listspeed(tar:String) {
+			this.dispatchEvent(new SPEvt(SPEvt.LISTSPEED, { listspeed:tar } ));
 		}
 		
 	}
