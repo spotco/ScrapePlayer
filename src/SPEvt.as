@@ -30,6 +30,8 @@ package  {
 		public static var SONG_POS_UPDATE:String = "song_pos_update";
 		public static var LISTSPEED:String = "listspeed";
 		
+		public static var TEST:String = "test";
+		
 	}
 
 }

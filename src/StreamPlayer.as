@@ -39,7 +39,7 @@ package  {
 			this.crawler = new StreamPlayerCrawler;
 			this.crawler.addEventListener(SPEvt.PRINT_EVT, function(e:SPEvt) { view.msg_to_screen(e.info.msg); });
 			this.crawler.addEventListener(SPEvt.MSG_TO_TMP, function(e:SPEvt) { view.msg_to_tmp(e.info.msg); });
-			this.crawler.addEventListener(SPEvt.SONG_FOUND, function(e:SPEvt) { songlib.add_song(e.info.url, e.info.filename); });
+			this.crawler.addEventListener(SPEvt.SONG_FOUND, function(e:SPEvt) { songlib.add_song(e.info.url, e.info.filename,e.info.path); });
 			
 			this.songlib.addEventListener(SPEvt.SONG_STREAMING, function(e:SPEvt) { 
 				cur_progress = String(e.info.progress);
@@ -73,6 +73,13 @@ package  {
 				} else {
 					view.msg_to_screen("Invalid LISTSPEED.");
 				}
+			});
+			
+			this.view.addEventListener(SPEvt.TEST, function(e:SPEvt) { 
+				if (e.info.val == 1) songlib.ftop_push(e.info.msg);
+				else if (e.info.val == 2) songlib.ftop_pop();
+				else if (e.info.val == 3) songlib.ftop_list_folders();
+				else if (e.info.val == 4) songlib.ftop_list_files();
 			});
 			
 			

@@ -26,7 +26,51 @@ package  {
 		private var songs:Array = new Array();
 		private var sound_pos_disp_updater:Timer;
 		
+		//folder tree stuff
+		private var folder_root:FolderNode = new FolderNode(".");
+		private var cur_folder_stack:Vector.<FolderNode> = new Vector.<FolderNode>();
+		
+		private function top():FolderNode { return cur_folder_stack[cur_folder_stack.length-1] }
+		public function ftop_push(cd:String):Boolean {
+			var cur:FolderNode = top();
+			if (cur.subfolders[cd]) {
+				cur_folder_stack.push(cur.subfolders[cd]);
+				return true;
+			} else {
+				return false;
+			}
+		}
+		public function ftop_pop():Boolean {
+			if (cur_folder_stack.length > 1) {
+				cur_folder_stack.pop();
+				return true;
+			} else {
+				return false;
+			}
+		}
+		public function ftop_list_folders():Vector.<String> {
+			var tmp:Vector.<String> = new Vector.<String>();
+			var cur:FolderNode = top();
+			for (var k in cur.subfolders) {
+				tmp.push(k);
+			}
+			return tmp;
+		}
+		public function ftop_list_files():Vector.<String> {
+			var tmp:Vector.<String> = new Vector.<String>();
+			var cur:FolderNode = top();
+			for each(var k:FileData in cur.songs) {
+				tmp.push(k.filename);
+			}
+			return tmp;
+		}
+		public function ftop_name():String {
+			return top().name;
+		}
+		//end folder tree stuff
+		
 		public function StreamPlayerMusicLib() {
+			cur_folder_stack.push(folder_root);
 			this.sound_pos_disp_updater = new Timer(500);
 			this.sound_pos_disp_updater.addEventListener(TimerEvent.TIMER, function(e) {
 				if (is_playing && sc && current_song) {
@@ -40,9 +84,20 @@ package  {
 			listspeed = t;
 		}
 		
-		public function add_song(url:String, filename:String) {
-			songs.push(new FileData(url, filename));
+		public function add_song(url:String, filename:String, path:Array) {
+			var cursong:FileData = new FileData(url, filename);
 			
+			var curnode:FolderNode = folder_root;
+			for (var i:int = 0; i < path.length; i++) {
+				if (!curnode.subfolders[path[i]]) {
+					curnode.subfolders[path[i]] = new FolderNode(path[i]);
+				}
+				curnode = curnode.subfolders[path[i]];
+				
+			}
+			trace(path);
+			curnode.songs.push(cursong);
+			songs.push(cursong);
 		}
 		
 		public function get_num_songs():int {
@@ -202,10 +257,44 @@ package  {
 			play();
 		}
 		
+		public function _test_traversal() {
+			trace("BEGIN TRAVERSAL");
+			var stack:Array = [folder_root.name];
+			for (var key in folder_root.subfolders) {
+				stack.push(key);
+				_test_traversal_rec(folder_root[key], stack);
+				stack.pop();
+			}
+			trace("END TRAVERSAL");
+		}
+		
+		public function _test_traversal_rec(cur:FolderNode, stack:Array) {
+			for each(var s in cur.songs) {
+				trace(String(stack).replace(",", "->") + ":=>" + s.filename);
+			}
+			for (var key in cur.subfolders) {
+				stack.push(key);
+				_test_traversal_rec(cur.subfolders[key], stack);
+				stack.pop();
+			}
+		}
+		
 
 		
 	}
 
+}
+
+internal class FolderNode {
+	public var subfolders = {};
+	public var songs:Vector.<FileData> = new Vector.<FileData>();
+	public var name:String = "";
+	public function FolderNode(s:String) {
+		this.name = s;
+	}
+	public function toString():String {
+		return name;
+	}
 }
 
 internal class FileData {

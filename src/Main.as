@@ -19,9 +19,11 @@ package {
 		public static var FAVLIST_URL:String = "http://spotcos.com/misc/scrapeplayer/fav.txt";
 		public static var MOBILE_UI:Boolean = false;
 		public static var LOCAL:Boolean = true;
-
-
+		
 		public function Main():void {
+			trace(LangTokenizer.tokenize("(let x (+ 5 4.2 3))"));
+			
+			
 			LOCAL = loaderInfo.url.indexOf("file:") == 0;
 			if (stage) init();
 			else addEventListener(Event.ADDED_TO_STAGE, init);

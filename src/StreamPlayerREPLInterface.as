@@ -21,6 +21,11 @@ package  {
 			"LISTSPEED (1+)\n";
 		;
 		
+		public function test1(msg:String) { this.dispatchEvent(new SPEvt(SPEvt.TEST, { val:1,msg:msg } )) };
+		public function test2(msg:String) { this.dispatchEvent(new SPEvt(SPEvt.TEST, { val:2, msg:msg } )) };
+		public function test3(msg:String) { this.dispatchEvent(new SPEvt(SPEvt.TEST, { val:3, msg:msg } )) };
+		public function test4(msg:String) { this.dispatchEvent(new SPEvt(SPEvt.TEST,{ val:4,msg:msg} )) };
+		
 		public function eval(msg:String) {
 			try {
 				D.eval(msg, { }, this);

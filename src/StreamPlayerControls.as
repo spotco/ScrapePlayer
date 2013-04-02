@@ -54,7 +54,9 @@ package  {
 			repl.addEventListener(SPEvt.LIST, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LIST, e.info)); } );
 			repl.addEventListener(SPEvt.REMOVE, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.REMOVE, e.info)); } );
 			repl.addEventListener(SPEvt.LIST_FAV, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LIST_FAV, e.info)); } );
-			repl.addEventListener(SPEvt.LISTSPEED, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LISTSPEED, e.info)); });
+			repl.addEventListener(SPEvt.LISTSPEED, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LISTSPEED, e.info)); } );
+			
+			repl.addEventListener(SPEvt.TEST, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.TEST, e.info)); });
 			
 			if (Main.MOBILE_UI) {
 				make_mobile_ui(p);
@@ -137,9 +139,17 @@ package  {
 		}
 		
 		
+		private function newparsestr(str:String) {
+			var tokens:Array = str.replace(/\(/g, " ( ").replace(/\)/g, " ) ").replace(/\"/g," \" ").replace(/[\s]+/g, " ").replace(/^\s*(.*?)\s*$/g, "$1").split(" ");
+			
+			var stack:Array = [ 0 ];
+			for each(var tok:String in tokens) {
+			}
+			trace(tokens);
+		}
+		
 		private function terminal_input():void {
 			var input_text:String = input_line.text;
-			
 			input_stack.unshift(input_text);
 			input_stack_hist = -1;
 			
@@ -173,7 +183,7 @@ package  {
 				});
 				eval_stmnt += ");"
 			}
-			trace(eval_stmnt);
+			//trace(eval_stmnt);
 			repl.eval(eval_stmnt);
 		}
 				

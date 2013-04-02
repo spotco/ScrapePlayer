@@ -66,7 +66,17 @@ package  {
 			}
 		}
 		
-		
+		private function get_folder(url:String):Array {
+			if (url.indexOf(this.url_base) != -1) {
+				url = url.replace(this.url_base, "");
+				var apath:Array = url.split("/");
+				apath.pop();
+				return apath;
+				
+			} else {
+				return [".."];
+			}
+		}
 		
 		private function crawl(url:String, depth:int, opts:Object) {
 			if (visited_hash[url] != null) {
@@ -84,7 +94,7 @@ package  {
 					} else {
 						msg_out("FILE: " + curi.getFilename());
 					}
-					dispatchEvent(new SPEvt(SPEvt.SONG_FOUND, { url:url, filename:curi.getFilename() } ));
+					dispatchEvent(new SPEvt(SPEvt.SONG_FOUND, { url:url, filename:curi.getFilename(), path:get_folder(url) } ));
 				} else {
 					msg_out("FILE: " + url, opts);
 				}
