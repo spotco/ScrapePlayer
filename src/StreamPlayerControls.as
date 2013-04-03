@@ -6,6 +6,7 @@ package  {
 	import flash.events.MouseEvent;
 	import flash.text.TextField;
 	import flash.ui.Keyboard;
+	import com.adobe.errors.IllegalStateError;
 	
 	public class StreamPlayerControls extends EventDispatcher {
 		
@@ -16,7 +17,6 @@ package  {
 		private var output_log:TextField;
 		private var temp_out_line:TextField;
 		private var input_line:TextField;
-		private var repl:StreamPlayerREPLInterface;
 		
 		public function StreamPlayerControls(p:StreamPlayer) {
 			output_log = UILib.MAKE_DYN_TEXT(PAD, PAD, StreamPlayer.WID - PAD * 2, OUT_HEI);
@@ -25,8 +25,6 @@ package  {
 			p.addChild(output_log);
 			p.addChild(temp_out_line);
 			p.addChild(input_line);
-			
-			repl = new StreamPlayerREPLInterface();
 			
 			input_line.addEventListener(KeyboardEvent.KEY_UP, function(e:KeyboardEvent) {
 				if (e.keyCode == Keyboard.ENTER && input_line.text.length > 0) {
@@ -40,57 +38,6 @@ package  {
 			
 			input_line.background = true;
 			input_line.backgroundColor = 0xDDDDDD;
-			
-			repl.addEventListener(SPEvt.CLEAR_SCREEN_EVT, clear_screen_evth);
-			repl.addEventListener(SPEvt.PRINT_EVT, print_to_screen_evth);
-			repl.addEventListener(SPEvt.HELP_EVT, help_evth);
-			repl.addEventListener(SPEvt.LOAD_SITE_EVT, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LOAD_SITE_EVT,e.info)); } );
-			repl.addEventListener(SPEvt.STOP_CRAWLER, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.STOP_CRAWLER, e.info)); } );
-			repl.addEventListener(SPEvt.PLAY_RANDOM_SONG, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.PLAY_RANDOM_SONG,e.info)); } );
-			repl.addEventListener(SPEvt.PLAY, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.PLAY)); } );
-			repl.addEventListener(SPEvt.PAUSE, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.PAUSE)); } );
-			repl.addEventListener(SPEvt.VOLUME, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.VOLUME, e.info)); } );
-			repl.addEventListener(SPEvt.PLAY_SPECIFIC, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.PLAY_SPECIFIC, e.info)); } );
-			repl.addEventListener(SPEvt.LIST, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LIST, e.info)); } );
-			repl.addEventListener(SPEvt.REMOVE, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.REMOVE, e.info)); } );
-			repl.addEventListener(SPEvt.LIST_FAV, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LIST_FAV, e.info)); } );
-			repl.addEventListener(SPEvt.LISTSPEED, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LISTSPEED, e.info)); } );
-			
-			repl.addEventListener(SPEvt.TEST, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.TEST, e.info)); });
-			
-			if (Main.MOBILE_UI) {
-				make_mobile_ui(p);
-			}
-		}
-		
-		private function make_mobile_ui(p:StreamPlayer) {
-			var load:Sprite = new Sprite();
-			load.graphics.beginFill(0xFF0000);
-			load.graphics.drawCircle(0, 0, 50);
-			p.addChild(load);
-			
-			
-			var play:Sprite = new Sprite();
-			play.graphics.beginFill(0x00FF00);
-			play.graphics.drawCircle(0, 0, 50);
-			p.addChild(play);
-			
-			load.x = StreamPlayer.WID - 100;
-			load.y = 60;
-			
-			play.x = StreamPlayer.WID - 100;
-			play.y = 170;
-			
-			load.addEventListener(MouseEvent.CLICK, function(e) {
-				dispatchEvent(new SPEvt(SPEvt.LOAD_SITE_EVT,{ url:"spotcos.com/misc", depth:5, opts:""}));
-			});
-			
-			play.addEventListener(MouseEvent.CLICK, function(e) {
-				dispatchEvent(new SPEvt(SPEvt.PLAY_RANDOM_SONG));
-			});
-			
-			CLib.add_mouse_over(load);
-			CLib.add_mouse_over(play);
 		}
 		
 		public function get_input_focus_object():InteractiveObject {
@@ -138,68 +85,154 @@ package  {
 			}
 		}
 		
-		
-		private function newparsestr(str:String) {
-			var tokens:Array = str.replace(/\(/g, " ( ").replace(/\)/g, " ) ").replace(/\"/g," \" ").replace(/[\s]+/g, " ").replace(/^\s*(.*?)\s*$/g, "$1").split(" ");
-			
-			var stack:Array = [ 0 ];
-			for each(var tok:String in tokens) {
-			}
-			trace(tokens);
+		static function VAL(a) {
+			return VARS[a] == null?a:VARS[a];
 		}
+
+		static var VARS = {
+			"+":function(a:Array) {
+				if (a.length < 1) eval_error("+, 1 param required");
+				var s = VAL(a[0]); for (var i:int = 1; i < a.length; i++) s += VAL(a[i]); return s;
+			},
+			"-":function(a:Array) {
+				if (a.length < 1) eval_error("-, 1 param required");
+				var s = VAL(a[0]); for (var i:int = 1; i < a.length; i++) s -= VAL(a[i]); return s;
+			},
+			"*":function(a:Array) {
+				if (a.length < 2) eval_error("*, 2 param required");
+				var s = VAL(a[0]); for (var i:int = 1; i < a.length; i++) s *= VAL(a[i]); return s;
+			},
+			"/":function(a:Array) {
+				if (a.length < 2) eval_error("/, 2 param required");
+				var s = VAL(a[0]); for (var i:int = 1; i < a.length; i++) s /= VAL(a[i]); return s;
+			},
+			"let":function(a:Array) {
+				if (a.length < 2) eval_error("let, 2 param required");
+				if (StrUtil.isNumeric(a[0])) eval_error("let non numeric variable");
+				VARS[a[0]] = VAL(a[1]);
+				return VAL(a[1]);
+			},
+			"print":function(a:Array) {
+				for (var i:int = 0; i < a.length; i++) print_msg("[" + i + "]:" + VAL(a[i]));
+				return 0;
+			},
+			"eval":function(a:Array) {
+				return eval(VAL(a[0]));
+			},
+			"ifeval":function(a:Array) {
+				if (a.length < 2) eval_error("ifeval, 2 param required");
+				if (VAL(a[0])) return eval(VAL(a[1]));
+				return null;
+			},
+			"clear":function(a:Array) {
+				for (var i:int = 0; i < a.length; i++) VARS[a[i]] = undefined;
+			}
+		};
+		
+		/**
+		 * count to 100
+		let a 0
+		let incr "let a (+ a 1:print a:eval loop"
+		let loop "ifeval (+ a -100) incr"
+		eval loop
+		 */
 		
 		private function terminal_input():void {
 			var input_text:String = input_line.text;
 			input_stack.unshift(input_text);
 			input_stack_hist = -1;
-			
 			input_line.text = "";
-			var eval_stmnt:String = "";
-			var tokens:Array = input_text.split(" ");
-			tokens.map(function(t) { t.replace(" ", ""); } );
 			
-			if (tokens[1] && tokens[1].charAt(0) == "\"" && tokens[tokens.length - 1].charAt(tokens[tokens.length - 1].length-1) == "\"") {
-				eval_stmnt = tokens[0] + "(";
-				for (var i = 1; i < tokens.length; i++) {
-					eval_stmnt += tokens[i];
-					eval_stmnt += " ";
-				}
-				eval_stmnt += ");";
-			} else {
-				tokens.forEach(function(val:String, ind:int, arr:Array) {
-					if (!Boolean(val.match(/^[0-9]+.?[0-9]*$/)) && ind != 0) {
-						eval_stmnt += "\""+val+"\"";
-					} else if (ind == 0) {
-						eval_stmnt += val.toLowerCase();
-					} else {
-						eval_stmnt += val;
-					}
-					
-					if (ind == 0) {
-						eval_stmnt += "(";
-					} else if (ind != arr.length - 1) {
-						eval_stmnt += ",";
-					}
-				});
-				eval_stmnt += ");"
-			}
-			//trace(eval_stmnt);
-			repl.eval(eval_stmnt);
+			eval(input_text);
 		}
+		
+		public static function eval(input_text:String) {
+			input_text.split(";").filter(function(i) {
+				return StrUtil.trim(i).length > 0;
+			}).forEach(function(i) {
+				var tok:Vector.<Token> = LangTokenizer.tokenize(i);
+				LangTokenizer.balance(tok);
 				
-		private function clear_screen_evth(e:SPEvt) {
-			clear_screen();
+				try {
+					return run(tok);
+				} catch (e) {
+					trace(e);
+				}
+			});
+			
+
+		}
+
+		
+		public static function run(tok:Vector.<Token>) {
+			//trace(tok);
+			
+			var curframe:StackFrame = new StackFrame();
+			var top:Boolean = false;
+			
+			while (tok.length) {
+				var ctoken:Token = tok.shift();
+				if (top) {
+					if (ctoken.type == Token.TYPE_VAR) {
+						curframe.fn = ctoken.val;
+					} else {
+						eval_error("expected function name, was:"+Token.type_enum_to_str(ctoken.type));
+					}
+					top = false;
+					
+				} else if (ctoken.type == Token.TYPE_POPEN) {
+					curframe.next = new StackFrame();
+					curframe.next.prev = curframe;
+					curframe = curframe.next;
+					top = true;
+					
+				} else if (ctoken.type == Token.TYPE_PCLOSE) {
+					var targetfn = VARS[curframe.fn];
+					if (targetfn == null) {
+						eval_error("variable:" + curframe.next + " not found");
+					} else if (!(targetfn is Function)) {
+						eval_error("variable:" + curframe.next + " not function");
+					}
+					var evaled = targetfn(curframe.vars);
+					curframe = curframe.prev;
+					curframe.next = null;
+					curframe.vars.push(evaled);
+					
+				} else {
+					if (ctoken.type == Token.TYPE_NUM) {
+						curframe.vars.push(ctoken.numval);
+						
+					} else if (ctoken.type == Token.TYPE_STR) {
+						curframe.vars.push(ctoken.val);
+						
+					} else {
+						curframe.vars.push(ctoken.val);
+						
+					}
+				}
+			}
+			
+			return curframe.vars[0];
 		}
 		
-		private function print_to_screen_evth(e:SPEvt) {
-			msg_to_screen(e.info.msg);
+		public static function print_msg(msg:String) {
+			trace(msg);
 		}
 		
-		private function help_evth(e:SPEvt) {
-			clear_screen();
-			msg_to_screen(StreamPlayerREPLInterface.HELP_TEXT);
+		public static function eval_error(msg:String) {
+			throw new IllegalStateError(msg);
 		}
 		
 	}
+}
 
+internal class StackFrame {
+	public var next:StackFrame;
+	public var prev:StackFrame;
+	public var vars:Array = [];
+	public var fn:String;
+	
+	public function toString():String {
+		return "{vars:" + vars + ", next:" + next + ", prev:" + prev + "}";
+	}
 }
