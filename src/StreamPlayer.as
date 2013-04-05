@@ -10,14 +10,7 @@ package  {
 		public static var WID:int;
 		public static var HEI:int;
 		public static var WELCOME_MESSAGE:String = "" +
-		"Welcome to ScrapePlayer 1.1!\nTry changing your LISTSPEED\n\nArrow keys to see your previous entries\nView my favorite working pages with ''LISTFAV''!\n\n" +
-		"Load a directory with:\n" +
-		"\tload  spotcos.com/misc   (or your website of choice)\n\n" +
-		"Stop scraping with:\n" +
-		"\tstopload\n\n" +
-		"Play a random song with:\n" +
-		"\trandom\n\n" +
-		"And \"HELP\" for a full command list.\n";
+		"(let a 5";
 		
 		private var view:StreamPlayerControls;
 		private var crawler:StreamPlayerCrawler;
@@ -82,9 +75,14 @@ package  {
 				else if (e.info.val == 4) songlib.ftop_list_files();
 			});
 			
-			
 			view.msg_to_screen(WELCOME_MESSAGE);
-			this.addEventListener(Event.ADDED_TO_STAGE, function() { stage.focus = view.get_input_focus_object(); });
+			this.addEventListener(Event.ADDED_TO_STAGE, function() { stage.focus = view.get_input_focus_object(); } );
+			
+			Lang.set_out(msg_out);
+		}
+		
+		public function msg_out(msg:String) {
+			view.msg_to_screen(msg);
 		}
 		
 		private function print_list_fav() {

@@ -8,27 +8,19 @@ package  {
 		public static var TYPE_STR:int = 5;
 		
 		public var type:int;
-		public var val:String;
-		public var numval:Number;
+		public var val;
 		
-		public function Token(type:int,val:String,numval:Number = 0) {
+		public function Token(type:int, val = null ) {
 			this.type = type;
 			this.val = val;
-			this.numval = numval;
 		}
 		
 		public function toString():String {
 			if (type == TYPE_POPEN || type == TYPE_PCLOSE) {
 				return "{type:" + Token.type_enum_to_str(type) + "}";
 				
-			} else if (type == TYPE_VAR) {
+			} else if (type == TYPE_VAR || type == TYPE_NUM || type == TYPE_STR) {
 				return "{type:" + Token.type_enum_to_str(type) + ",val:" + val + "}";
-				
-			} else if (type == TYPE_NUM) {
-				return "{type:" + Token.type_enum_to_str(type) + ",numval:" + numval + "}";
-				
-			} else if (type == TYPE_STR) {
-				return "{type:" + Token.type_enum_to_str(type) + ",val:\"" + val + "\"}";
 				
 			} else {
 				return "ERROR";

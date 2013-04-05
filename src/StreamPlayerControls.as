@@ -84,155 +84,15 @@ package  {
 				input_line.text = "";
 			}
 		}
-		
-		static function VAL(a) {
-			return VARS[a] == null?a:VARS[a];
-		}
-
-		static var VARS = {
-			"+":function(a:Array) {
-				if (a.length < 1) eval_error("+, 1 param required");
-				var s = VAL(a[0]); for (var i:int = 1; i < a.length; i++) s += VAL(a[i]); return s;
-			},
-			"-":function(a:Array) {
-				if (a.length < 1) eval_error("-, 1 param required");
-				var s = VAL(a[0]); for (var i:int = 1; i < a.length; i++) s -= VAL(a[i]); return s;
-			},
-			"*":function(a:Array) {
-				if (a.length < 2) eval_error("*, 2 param required");
-				var s = VAL(a[0]); for (var i:int = 1; i < a.length; i++) s *= VAL(a[i]); return s;
-			},
-			"/":function(a:Array) {
-				if (a.length < 2) eval_error("/, 2 param required");
-				var s = VAL(a[0]); for (var i:int = 1; i < a.length; i++) s /= VAL(a[i]); return s;
-			},
-			"let":function(a:Array) {
-				if (a.length < 2) eval_error("let, 2 param required");
-				if (StrUtil.isNumeric(a[0])) eval_error("let non numeric variable");
-				VARS[a[0]] = VAL(a[1]);
-				return VAL(a[1]);
-			},
-			"print":function(a:Array) {
-				for (var i:int = 0; i < a.length; i++) print_msg("[" + i + "]:" + VAL(a[i]));
-				return 0;
-			},
-			"eval":function(a:Array) {
-				return eval(VAL(a[0]));
-			},
-			"ifeval":function(a:Array) {
-				if (a.length < 2) eval_error("ifeval, 2 param required");
-				if (VAL(a[0])) return eval(VAL(a[1]));
-				return null;
-			},
-			"clear":function(a:Array) {
-				for (var i:int = 0; i < a.length; i++) VARS[a[i]] = undefined;
-			}
-		};
-		
-		/**
-		 * count to 100
-		let a 0
-		let incr "let a (+ a 1:print a:eval loop"
-		let loop "ifeval (+ a -100) incr"
-		eval loop
-		 */
-		
+			
 		private function terminal_input():void {
 			var input_text:String = input_line.text;
 			input_stack.unshift(input_text);
 			input_stack_hist = -1;
 			input_line.text = "";
 			
-			eval(input_text);
+			Lang.out("RTVAL:="+Lang.parseval(input_text)+"\n");
 		}
 		
-		public static function eval(input_text:String) {
-			input_text.split(";").filter(function(i) {
-				return StrUtil.trim(i).length > 0;
-			}).forEach(function(i) {
-				var tok:Vector.<Token> = LangTokenizer.tokenize(i);
-				LangTokenizer.balance(tok);
-				
-				try {
-					return run(tok);
-				} catch (e) {
-					trace(e);
-				}
-			});
-			
-
-		}
-
-		
-		public static function run(tok:Vector.<Token>) {
-			//trace(tok);
-			
-			var curframe:StackFrame = new StackFrame();
-			var top:Boolean = false;
-			
-			while (tok.length) {
-				var ctoken:Token = tok.shift();
-				if (top) {
-					if (ctoken.type == Token.TYPE_VAR) {
-						curframe.fn = ctoken.val;
-					} else {
-						eval_error("expected function name, was:"+Token.type_enum_to_str(ctoken.type));
-					}
-					top = false;
-					
-				} else if (ctoken.type == Token.TYPE_POPEN) {
-					curframe.next = new StackFrame();
-					curframe.next.prev = curframe;
-					curframe = curframe.next;
-					top = true;
-					
-				} else if (ctoken.type == Token.TYPE_PCLOSE) {
-					var targetfn = VARS[curframe.fn];
-					if (targetfn == null) {
-						eval_error("variable:" + curframe.next + " not found");
-					} else if (!(targetfn is Function)) {
-						eval_error("variable:" + curframe.next + " not function");
-					}
-					var evaled = targetfn(curframe.vars);
-					curframe = curframe.prev;
-					curframe.next = null;
-					curframe.vars.push(evaled);
-					
-				} else {
-					if (ctoken.type == Token.TYPE_NUM) {
-						curframe.vars.push(ctoken.numval);
-						
-					} else if (ctoken.type == Token.TYPE_STR) {
-						curframe.vars.push(ctoken.val);
-						
-					} else {
-						curframe.vars.push(ctoken.val);
-						
-					}
-				}
-			}
-			
-			return curframe.vars[0];
-		}
-		
-		public static function print_msg(msg:String) {
-			trace(msg);
-		}
-		
-		public static function eval_error(msg:String) {
-			throw new IllegalStateError(msg);
-		}
-		
-	}
-}
-
-internal class StackFrame {
-	public var next:StackFrame;
-	public var prev:StackFrame;
-	public var vars:Array = [];
-	public var fn:String;
-	
-	public function toString():String {
-		return "{vars:" + vars + ", next:" + next + ", prev:" + prev + "}";
 	}
 }
