@@ -91,7 +91,7 @@ package  {
 			input_stack_hist = -1;
 			input_line.text = "";
 			
-			Lang.out("RTVAL:="+Lang.parseval(input_text)+"\n");
+			Lang.out(":="+Lang.parseval(input_text)+"\n");
 		}
 		
 	}

@@ -10,7 +10,7 @@ package  {
 		public static var WID:int;
 		public static var HEI:int;
 		public static var WELCOME_MESSAGE:String = "" +
-		"(let a 5";
+		"Welcome to SCRAPEPlayr (now with lisp)";
 		
 		private var view:StreamPlayerControls;
 		private var crawler:StreamPlayerCrawler;
@@ -46,6 +46,7 @@ package  {
 				view.msg_to_tmp("LOADED: "+cur_progress+"%   "+cur_time+" / "+max_time+"   PLAYING: "+cur_name);
 			});
 			this.songlib.addEventListener(SPEvt.PRINT_EVT, function(e:SPEvt) { view.msg_to_screen(e.info.msg); } );
+			
 			
 			this.view.addEventListener(SPEvt.LOAD_SITE_EVT, load_site_evth);
 			this.view.addEventListener(SPEvt.STOP_CRAWLER, function(e){ crawler.stop() });
