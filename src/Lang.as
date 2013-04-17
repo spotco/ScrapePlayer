@@ -66,7 +66,7 @@ package  {
 				buf += "]";
 				return buf;
 			} else {
-				throw new IllegalStateError(printf("unknown e in expr2str:%s", e));
+				msgout("unknown e in expr2str:"+ e);
 			}
 			return "ERR";
 		}
@@ -84,6 +84,24 @@ package  {
 					return reduce(a, function(a, b) { return a * b; } );
 				return a;
 			},
+			"/":function(a:Array) {
+				return new Token(Token.TYPE_NUM, VAL(a[1]).val / VAL(a[2]).val);
+			},
+			"%":function(a:Array) {
+				return new Token(Token.TYPE_NUM, VAL(a[1]).val % VAL(a[2]).val);
+			},
+			"^":function(a:Array) {
+				return new Token(Token.TYPE_NUM, Math.pow(VAL(a[1]).val , VAL(a[2]).val));
+			},
+			"floor":function(a:Array) {
+				return new Token(Token.TYPE_NUM, Math.floor(VAL(a[1]).val));
+			},
+			"ceil":function(a:Array) {
+				return new Token(Token.TYPE_NUM, Math.ceil(VAL(a[1]).val));
+			},
+			"round":function(a:Array) {
+				return new Token(Token.TYPE_NUM, Math.round(VAL(a[1]).val));
+			},
 			"apply":function(a:Array) {
 				var aargs:Array = VAL(a[2]);
 				var aargs_cpy:Array = [];
@@ -96,35 +114,71 @@ package  {
 			"top":Lang.top,
 			"par":Lang.par,
 			"let":function(a:Array) {
+				if (VARS[a[1].val] is Function) {
+					msgout("ERROR::let::cannot overwrite builtins");
+					return a;
+				}
 				VARS[a[1].val] = a[2];
 				return a[2];
 			},
-			"print":function(a:Array) {
-				for (var i:int = 1; i < a.length; i++) {
-					
+			"printh":function(a:Array) {
+				return VARS["print"](a, true);
+			},
+			"print":function(a:Array, hold:Boolean = false ) {
+				for (var i:int = 1; i < a.length; i++) {	
 					if (a[i] is Token) {
 						if ((a[i] as Token).type == Token.TYPE_VAR) {
-							var e =  VAL(a[i]);
-							if (e is Function) {
+							if (hold) {
 								msgout(expr2str(a[i]));
-							} else if (e is Array) {
-								msgout(expr2str(e));
-							} else if (e is Token) {
-								msgout(expr2str(e));
+								
 							} else {
-								throw new IllegalStateError("unknown thing to print: "+e);
+								var e =  VAL(a[i]);
+								if (e is Function) {
+									msgout(printf("@BUILTIN(%s)", a[i].val));
+								} else if (e is Array || e is Token) {
+									msgout(expr2str(e));
+								} else {
+									throw new IllegalStateError("ERROR::print::unknown token: "+e);
+								}	
 							}
-							
-							
 						} else {
 							msgout(expr2str(a[i]));
 						}
+					} else if (a[i] is Array) {
+						msgout(expr2str(a[i]));
 						
 					} else {
-						throw new IllegalStateError("printing nontoken: "+e);
-					}	
+						throw new IllegalStateError("ERROR::print::printing nontoken: "+e);
+					}
 				}
 				return par(a);
+			},
+			"nth":function(a:Array) {
+				var target = VAL(a[1]);
+				if (a.length == 3 && a[2] is Token && a[2].type == Token.TYPE_NUM && (target is Array || target is Token && target.type == Token.TYPE_STR)) {
+					if (target is Array) {
+						if (a[2].val >= VAL(a[1]).length) {
+							msgout("ERROR::nth::array out of bounds");
+							return a;
+						} else {
+							return target[a[2].val];
+						}
+					} else if (target is Token) {
+						target = target.val;
+						if (a[2].val >= target.length) {
+							msgout("ERROR::nth::string out of bounds");
+							return a;
+						} else {
+							return new Token(Token.TYPE_STR,target.charAt(a[2].val));
+						}
+					}
+				} else {
+					msgout("ERROR::nth::param error (nth array i)");
+					return a;
+				}
+			},
+			"val":function(a:Array) {
+				return VAL(a[1]);
 			},
 			"eval":function(a:Array) {
 				return eval(VAL(a[1]));
@@ -155,7 +209,14 @@ package  {
 				}
 				return lst;
 			},
-			
+			"push":function(a:Array) {
+				
+				return a;
+			},
+			"pop":function(a:Array) {
+				
+				return a;
+			},
 			"play":function(a:Array) {
 				msgout("playing:" + a[1].val);
 			},
@@ -174,28 +235,17 @@ package  {
 		};
 		
 		public static function eval(lsts:Array) {
-			var curframe:StackFrame = new StackFrame();
+			var curframe = [];
 			for (var i:int = 0; i < lsts.length; i++) {
 				var cobj = lsts[i];
 				if (cobj is Array) {
-					curframe.vars.push(eval(cobj));
+					curframe.push(eval(cobj));
 				} else if (cobj is Token) {
-					curframe.vars.push(cobj);
+					curframe.push(cobj);
 				}
 			}
-			return VARS[top(curframe.vars).val](curframe.vars);
+			return VARS[top(curframe).val](curframe);
 		}
-		
 	}
 
-}
-
-internal class StackFrame {
-	public var next:StackFrame;
-	public var prev:StackFrame;
-	public var vars:Array = [];
-	
-	public function toString():String {
-		return "{vars:" + vars + ", next:" + next + ", prev:" + prev + "}";
-	}
 }
