@@ -38,6 +38,44 @@ package  {
 			
 			input_line.background = true;
 			input_line.backgroundColor = 0xDDDDDD;
+			
+			/**
+			repl.addEventListener(SPEvt.CLEAR_SCREEN_EVT, clear_screen_evth);
+			repl.addEventListener(SPEvt.PRINT_EVT, print_to_screen_evth);
+			repl.addEventListener(SPEvt.HELP_EVT, help_evth);
+			repl.addEventListener(SPEvt.LOAD_SITE_EVT, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LOAD_SITE_EVT,e.info)); } );
+			repl.addEventListener(SPEvt.STOP_CRAWLER, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.STOP_CRAWLER, e.info)); } );
+			repl.addEventListener(SPEvt.PLAY_RANDOM_SONG, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.PLAY_RANDOM_SONG,e.info)); } );
+			repl.addEventListener(SPEvt.PLAY, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.PLAY)); } );
+			repl.addEventListener(SPEvt.PAUSE, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.PAUSE)); } );
+			repl.addEventListener(SPEvt.VOLUME, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.VOLUME, e.info)); } );
+			repl.addEventListener(SPEvt.PLAY_SPECIFIC, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.PLAY_SPECIFIC, e.info)); } );
+			repl.addEventListener(SPEvt.LIST, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LIST, e.info)); } );
+			repl.addEventListener(SPEvt.REMOVE, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.REMOVE, e.info)); } );
+			repl.addEventListener(SPEvt.LIST_FAV, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LIST_FAV, e.info)); } );
+			repl.addEventListener(SPEvt.LISTSPEED, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LISTSPEED, e.info)); });
+			 */
+			Lang._f_clear = clear_screen;
+			Lang._f_out = msg_to_screen;
+			Lang._f_list = function() {
+				
+			}
+			Lang._f_load = function(s) {
+				
+			}
+			Lang._f_play = function() {
+				
+			}
+			Lang._f_pause = function() {
+				
+			}
+			Lang._f_stopload = function() {
+				
+			}
+			Lang._f_volume = function(v) {
+				
+			}
+			
 		}
 		
 		public function get_input_focus_object():InteractiveObject {
@@ -90,7 +128,7 @@ package  {
 			input_stack.unshift(input_text);
 			input_stack_hist = -1;
 			input_line.text = "";
-			Lang.out(printf(":=%s\n",Lang.expr2str(Lang.parseval(input_text))));
+			Lang._f_out(printf(":=%s\n",Lang.expr2str(Lang.parseval(input_text))));
 		}
 		
 	}

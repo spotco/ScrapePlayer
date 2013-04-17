@@ -3,14 +3,17 @@ package  {
 	import com.adobe.errors.IllegalStateError;
 	public class Lang {
 		
-		static var out:Function;
-		
-		public static function set_out(f:Function) {
-			out = f;
-		}
+		public static var _f_out:Function;
+		public static var _f_clear:Function;
+		public static var _f_play:Function;
+		public static var _f_list:Function;
+		public static var _f_load:Function;
+		public static var _f_volume:Function;
+		public static var _f_pause:Function;
+		public static var _f_stopload:Function;
 		
 		public static function msgout(msg:String) {
-			out(msg);
+			_f_out(msg);
 		}
 		
 		public static function parseval(input_text:String) {
@@ -26,8 +29,37 @@ package  {
 			}
 		}
 		
+		static function FSTACK() {
+			var searchst:Array = [];
+			searchst.push(VARS);
+			STACK.forEach(function(i) { searchst.push(i) } );
+			return searchst;
+		}
+		
 		static function VAL(a) {
-			return VARS[a.val] == null?a:VARS[a.val];
+			var searchst:Array = FSTACK();
+			searchst.push(VARS);
+			STACK.forEach(function(i) { searchst.push(i) } );
+			for (var i = searchst.length - 1; i >= 0; i--) {
+				if (searchst[i][a.val] != null) {
+					return searchst[i][a.val];
+				}
+			}
+			return a;
+		}
+		
+		static function STACKTOP_GET(s:String) {
+			var searchst:Array = FSTACK();
+			for (var i = searchst.length - 1; i >= 0; i--) {
+				if (searchst[i][s] != null) {
+					return searchst[i][s];
+				}
+			}
+			return s;
+		}
+		
+		static function STACKTOP() {
+			return STACK.length == 0?VARS:STACK[STACK.length-1];
 		}
 		
 		public static function top(a:Array):Token {
@@ -71,6 +103,7 @@ package  {
 			return "ERR";
 		}
 
+		static var STACK:Array = [];
 		static var VARS = {
 			"+":function(a:Array) {
 				var s = VAL(a[1]); 
@@ -114,15 +147,19 @@ package  {
 			"top":Lang.top,
 			"par":Lang.par,
 			"let":function(a:Array) {
-				if (VARS[a[1].val] is Function) {
+				if (STACKTOP()[a[1].val] is Function) {
 					msgout("ERROR::let::cannot overwrite builtins");
 					return a;
 				}
+				STACKTOP()[a[1].val] = a[2];
+				return a[2];
+			},
+			"letg":function(a:Array) {
 				VARS[a[1].val] = a[2];
 				return a[2];
 			},
 			"printh":function(a:Array) {
-				return VARS["print"](a, true);
+				return STACKTOP_GET("print")(a, true);
 			},
 			"print":function(a:Array, hold:Boolean = false ) {
 				for (var i:int = 1; i < a.length; i++) {	
@@ -186,15 +223,14 @@ package  {
 			"nop":function(a:Array) {
 				return par(a);
 			},
-			"clear":function(a:Array) {
-				for (var i:int = 1; i < a.length; i++) VARS[a[i].val] = undefined;
+			"unlet":function(a:Array) {
+				for (var i:int = 1; i < a.length; i++) STACKTOP()[a[i].val] = undefined;
 				return par(a);
 			},
 			"ifeval":function(a:Array) {
 				if (VAL(a[1]).val) {
 					var aargs:Array = [new Token(Token.TYPE_VAR, "eval"),VAL(a[2])];
-					trace(aargs);
-					return VARS["eval"](aargs);
+					return STACKTOP_GET("eval")(aargs);
 				}
 				return new Token(Token.TYPE_NUM,0);
 			},
@@ -203,34 +239,51 @@ package  {
 			},
 			"env":function(a:Array) {
 				var lst = [];
-				for (var k in VARS) {
-					var v = VARS[k];
-					lst.push(new Token(Token.TYPE_VAR, k)); //todo: apply print (env, hold eval on tokens
+				for (var k in STACKTOP()) {
+					var v = STACKTOP()[k];
+					lst.push(new Token(Token.TYPE_VAR, k));
 				}
 				return lst;
 			},
 			"push":function(a:Array) {
-				
-				return a;
+				STACK.push( { } );
+				return new Token(Token.TYPE_NUM,STACK.length);
 			},
 			"pop":function(a:Array) {
-				
-				return a;
+				if (STACK.length == 0) {
+					msgout("ERROR::pop::stack at bottom");
+				} else {
+					STACK.pop();
+				}
+				return new Token(Token.TYPE_NUM,STACK.length);
 			},
 			"play":function(a:Array) {
-				msgout("playing:" + a[1].val);
+				_f_play(a[1].val);
+				return a;
 			},
 			"pause":function(a:Array) {
-				msgout("playing:" + a[1].val);
+				_f_pause();
+				return a;
 			},
 			"load":function(a:Array) {
-				msgout("playing:" + a[1].val);
+				_f_load();
+				return a;
 			},
 			"stopload":function(a:Array) {
-				msgout("playing:" + a[1].val);
+				_f_stopload();
+				return a;
 			},
 			"volume":function(a:Array) {
-				msgout("playing:" + a[1].val);
+				_f_volume(a[1].val);
+				return a;
+			},
+			"clear":function(a:Array) {
+				_f_clear();
+				return a;
+			},
+			"list":function(a:Array) {
+				_f_list();
+				return a;
 			}
 		};
 		
@@ -244,7 +297,7 @@ package  {
 					curframe.push(cobj);
 				}
 			}
-			return VARS[top(curframe).val](curframe);
+			return STACKTOP_GET(top(curframe).val)(curframe);
 		}
 	}
 

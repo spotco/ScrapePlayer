@@ -79,12 +79,14 @@ package  {
 			view.msg_to_screen(WELCOME_MESSAGE);
 			this.addEventListener(Event.ADDED_TO_STAGE, function() { stage.focus = view.get_input_focus_object(); } );
 			
-			Lang.set_out(msg_out);
+			//Lang._f_out = msg_out;
 		}
 		
+		/*
 		public function msg_out(msg:String) {
 			view.msg_to_screen(msg);
 		}
+		*/
 		
 		private function print_list_fav() {
 			var l:URLLoader = new URLLoader();
