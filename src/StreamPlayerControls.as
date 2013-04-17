@@ -90,8 +90,7 @@ package  {
 			input_stack.unshift(input_text);
 			input_stack_hist = -1;
 			input_line.text = "";
-			
-			Lang.out(":="+Lang.parseval(input_text)+"\n");
+			Lang.out(printf(":=%s\n",Lang.expr2str(Lang.parseval(input_text))));
 		}
 		
 	}
