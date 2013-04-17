@@ -258,7 +258,7 @@ package  {
 				return new Token(Token.TYPE_NUM,STACK.length);
 			},
 			"play":function(a:Array) {
-				_f_play(a[1].val);
+				_f_play();
 				return a;
 			},
 			"pause":function(a:Array) {
@@ -266,7 +266,7 @@ package  {
 				return a;
 			},
 			"load":function(a:Array) {
-				_f_load();
+				_f_load(a[1].val);
 				return a;
 			},
 			"stopload":function(a:Array) {

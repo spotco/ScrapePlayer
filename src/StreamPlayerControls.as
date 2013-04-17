@@ -58,22 +58,23 @@ package  {
 			Lang._f_clear = clear_screen;
 			Lang._f_out = msg_to_screen;
 			Lang._f_list = function() {
-				
+				dispatchEvent(new SPEvt(SPEvt.LIST));
 			}
 			Lang._f_load = function(s) {
-				
+				trace(s);
+				dispatchEvent(new SPEvt(SPEvt.LOAD_SITE_EVT,{"url":s,"depth":5,"opts":[]}));
 			}
 			Lang._f_play = function() {
-				
+				dispatchEvent(new SPEvt(SPEvt.PLAY));
 			}
 			Lang._f_pause = function() {
-				
+				dispatchEvent(new SPEvt(SPEvt.PAUSE));
 			}
 			Lang._f_stopload = function() {
-				
+				 dispatchEvent(new SPEvt(SPEvt.STOP_CRAWLER));
 			}
 			Lang._f_volume = function(v) {
-				
+				 dispatchEvent(new SPEvt(SPEvt.VOLUME, {"volume":v}));
 			}
 			
 		}

@@ -39,7 +39,6 @@ package  {
 			if (url.match(/^http:\/\/.+\/[^\/]+\.[^\/]+$/) == null && url.charAt(url.length - 1) != "/") {
 				url = url + "/";
 			}
-			
 			crawl(url, depth, opts);
 		}
 		
