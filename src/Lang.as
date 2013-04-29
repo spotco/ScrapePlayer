@@ -11,6 +11,12 @@ package  {
 		public static var _f_volume:Function;
 		public static var _f_pause:Function;
 		public static var _f_stopload:Function;
+		public static var _f_speed:Function;
+		
+		public static var _f_top_list_folders:Function;
+		public static var _f_top_list_files:Function;
+		public static var _f_top_push:Function;
+		public static var _f_top_pop:Function;
 		
 		public static function msgout(msg:String) {
 			_f_out(msg);
@@ -190,7 +196,7 @@ package  {
 				}
 				return par(a);
 			},
-			"nth":function(a:Array) {
+			"arr::nth":function(a:Array) {
 				var target = VAL(a[1]);
 				if (a.length == 3 && a[2] is Token && a[2].type == Token.TYPE_NUM && (target is Array || target is Token && target.type == Token.TYPE_STR)) {
 					if (target is Array) {
@@ -213,6 +219,27 @@ package  {
 					msgout("ERROR::nth::param error (nth array i)");
 					return a;
 				}
+			},
+			"arr::push":function(a:Array) {
+				var tar:Array = VAL(a[1]);
+				var rtval:Array = [];
+				for (var i:int = 0; i < tar.length; i++) {
+					rtval.push(tar[i]);
+				}
+				rtval.push(a[2]);
+				return rtval;
+			},
+			"arr::pop":function(a:Array) {
+				var tar:Array = VAL(a[1]);
+				var rtval:Array = [];
+				for (var i:int = 0; i < tar.length; i++) {
+					rtval.push(tar[i]);
+				}
+				rtval.pop();
+				return rtval;
+			},
+			"arr::len":function(a:Array) {
+				return new Token(Token.TYPE_NUM,VAL(a[1]).length);
 			},
 			"val":function(a:Array) {
 				return VAL(a[1]);
@@ -257,34 +284,70 @@ package  {
 				}
 				return new Token(Token.TYPE_NUM,STACK.length);
 			},
-			"play":function(a:Array) {
-				_f_play();
+			"slib::play":function(a:Array) {
+				//TODO
+				//play (l|a)(r|f) target
+				_f_play(a);
 				return a;
 			},
-			"pause":function(a:Array) {
+			"slib::pause":function(a:Array) {
 				_f_pause();
 				return a;
 			},
-			"load":function(a:Array) {
-				_f_load(a[1].val);
+			"slib::load":function(a:Array) {
+				_f_load(a); //TODO--move output to $LOADED
 				return a;
 			},
-			"stopload":function(a:Array) {
+			"slib::stopload":function(a:Array) {
 				_f_stopload();
 				return a;
 			},
-			"volume":function(a:Array) {
-				_f_volume(a[1].val);
+			"slib::volume":function(a:Array) {
+				_f_volume(a);
 				return a;
 			},
 			"clear":function(a:Array) {
 				_f_clear();
 				return a;
 			},
-			"list":function(a:Array) {
-				_f_list();
+			"slib::listspeed":function(a:Array) {
+				_f_speed(a);
 				return a;
-			}
+			},
+			"slib::ls":function(a:Array) {
+				//TODO
+				//ls (a | r | f) target
+				var folders:Vector.<String>;	
+				folders = _f_top_list_files(a);
+				var rtval:Array = [];
+				folders.forEach(function(i) {
+					rtval.push(new Token(Token.TYPE_STR, i));
+				})
+				return rtval;
+			},
+			"slib::lsf":function(a:Array) {
+				var folders:Vector.<String>;	
+				folders = _f_top_list_folders(a);
+				var rtval:Array = [];
+				folders.forEach(function(i) {
+					rtval.push(new Token(Token.TYPE_STR, i));
+				})
+				return rtval;
+			},
+			"slib::cd":function(a:Array) {
+				if (a[1].val == "..") {
+					return _f_top_pop(a);
+				} else {
+					return _f_top_push(a);
+				}
+			},
+			
+			"slib::add":function(a:Array) {
+				//TODO
+				return a;
+			},
+			"_LOADED":[] //TODO
+			
 		};
 		
 		public static function eval(lsts:Array) {
@@ -297,7 +360,13 @@ package  {
 					curframe.push(cobj);
 				}
 			}
-			return STACKTOP_GET(top(curframe).val)(curframe);
+			var f = STACKTOP_GET(top(curframe).val);
+			if (f is Function) {
+				return f(curframe);
+			} else {
+				msgout("ERROR::Not a function");
+				return new Token(Token.TYPE_NUM, 0);
+			}
 		}
 	}
 

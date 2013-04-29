@@ -39,44 +39,8 @@ package  {
 			input_line.background = true;
 			input_line.backgroundColor = 0xDDDDDD;
 			
-			/**
-			repl.addEventListener(SPEvt.CLEAR_SCREEN_EVT, clear_screen_evth);
-			repl.addEventListener(SPEvt.PRINT_EVT, print_to_screen_evth);
-			repl.addEventListener(SPEvt.HELP_EVT, help_evth);
-			repl.addEventListener(SPEvt.LOAD_SITE_EVT, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LOAD_SITE_EVT,e.info)); } );
-			repl.addEventListener(SPEvt.STOP_CRAWLER, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.STOP_CRAWLER, e.info)); } );
-			repl.addEventListener(SPEvt.PLAY_RANDOM_SONG, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.PLAY_RANDOM_SONG,e.info)); } );
-			repl.addEventListener(SPEvt.PLAY, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.PLAY)); } );
-			repl.addEventListener(SPEvt.PAUSE, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.PAUSE)); } );
-			repl.addEventListener(SPEvt.VOLUME, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.VOLUME, e.info)); } );
-			repl.addEventListener(SPEvt.PLAY_SPECIFIC, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.PLAY_SPECIFIC, e.info)); } );
-			repl.addEventListener(SPEvt.LIST, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LIST, e.info)); } );
-			repl.addEventListener(SPEvt.REMOVE, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.REMOVE, e.info)); } );
-			repl.addEventListener(SPEvt.LIST_FAV, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LIST_FAV, e.info)); } );
-			repl.addEventListener(SPEvt.LISTSPEED, function(e:SPEvt) { dispatchEvent(new SPEvt(SPEvt.LISTSPEED, e.info)); });
-			 */
 			Lang._f_clear = clear_screen;
-			Lang._f_out = msg_to_screen;
-			Lang._f_list = function() {
-				dispatchEvent(new SPEvt(SPEvt.LIST));
-			}
-			Lang._f_load = function(s) {
-				trace(s);
-				dispatchEvent(new SPEvt(SPEvt.LOAD_SITE_EVT,{"url":s,"depth":5,"opts":[]}));
-			}
-			Lang._f_play = function() {
-				dispatchEvent(new SPEvt(SPEvt.PLAY));
-			}
-			Lang._f_pause = function() {
-				dispatchEvent(new SPEvt(SPEvt.PAUSE));
-			}
-			Lang._f_stopload = function() {
-				 dispatchEvent(new SPEvt(SPEvt.STOP_CRAWLER));
-			}
-			Lang._f_volume = function(v) {
-				 dispatchEvent(new SPEvt(SPEvt.VOLUME, {"volume":v}));
-			}
-			
+			Lang._f_out = msg_to_screen;			
 		}
 		
 		public function get_input_focus_object():InteractiveObject {

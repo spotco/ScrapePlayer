@@ -32,7 +32,11 @@ package  {
 			this.crawler = new StreamPlayerCrawler;
 			this.crawler.addEventListener(SPEvt.PRINT_EVT, function(e:SPEvt) { view.msg_to_screen(e.info.msg); });
 			this.crawler.addEventListener(SPEvt.MSG_TO_TMP, function(e:SPEvt) { view.msg_to_tmp(e.info.msg); });
-			this.crawler.addEventListener(SPEvt.SONG_FOUND, function(e:SPEvt) { songlib.add_song(e.info.url, e.info.filename,e.info.path); });
+			this.crawler.addEventListener(SPEvt.SONG_FOUND, function(e:SPEvt) {
+				trace("["+e.info.path+"]");
+				songlib.add_song(e.info.url, e.info.filename, e.info.path); 
+			});
+			//TODO--look at this
 			
 			this.songlib.addEventListener(SPEvt.SONG_STREAMING, function(e:SPEvt) { 
 				cur_progress = String(e.info.progress);
@@ -48,18 +52,49 @@ package  {
 			this.songlib.addEventListener(SPEvt.PRINT_EVT, function(e:SPEvt) { view.msg_to_screen(e.info.msg); } );
 			
 			
-			this.view.addEventListener(SPEvt.LOAD_SITE_EVT, load_site_evth);
-			this.view.addEventListener(SPEvt.STOP_CRAWLER, function(e){ crawler.stop() });
-			this.view.addEventListener(SPEvt.PLAY_RANDOM_SONG, function(e) { songlib.play_random() });
-			this.view.addEventListener(SPEvt.PAUSE, function(e:SPEvt) { songlib.pause(); } );
-			this.view.addEventListener(SPEvt.PLAY, function(e:SPEvt) { songlib.play(); } );
-			this.view.addEventListener(SPEvt.VOLUME, function(e:SPEvt) { songlib.volume(e.info.volume); } );
-			this.view.addEventListener(SPEvt.PLAY_SPECIFIC, function(e:SPEvt) { songlib.play_specific(e.info.tar); } );
-			this.view.addEventListener(SPEvt.LIST, function(e:SPEvt) { songlib.list(e.info.tar) } );
-			this.view.addEventListener(SPEvt.REMOVE, function(e:SPEvt) { songlib.remove(e.info.tar); } );
-			this.view.addEventListener(SPEvt.LIST_FAV, function(e:SPEvt) { print_list_fav(); } );
-			this.view.addEventListener(SPEvt.LISTSPEED, function(e:SPEvt) {
-				var tar:int = int(e.info.listspeed);
+			
+			Lang._f_list = function(a:Array) {
+				var tar:String = "";
+				if (a.length >= 2 && (a[1].type == Token.TYPE_STR || a[1].type == Token.TYPE_VAR)) {
+					tar = a[1].val;
+				}
+				songlib.list(tar);
+			}
+			Lang._f_load = function(a:Array) {
+				var url:String = "";
+				var depth:Number = 5;
+				var opts:Array = [];
+				
+				if (a.length >= 2 && (a[1].type == Token.TYPE_STR || a[1].type == Token.TYPE_VAR) ) {
+					url = a[1].val;
+				}
+				
+				if (a.length >= 3 && a[2].type == Token.TYPE_NUM ) {
+					depth = a[2].val;
+				}
+				load_site_evth(url, depth, opts);
+			}
+			
+			Lang._f_play = function(a:Array) {
+				songlib.play();
+			}
+			
+			Lang._f_pause = function() {
+				songlib.pause();
+			}
+			Lang._f_stopload = function() {
+				crawler.stop();
+			}
+			Lang._f_volume = function(a:Array) {
+				var volume:Number = 1;
+				if (a.length >= 2 && a[1].type == Token.TYPE_NUM) {
+					volume = a[1].val;
+				}
+				songlib.volume(volume);
+			}
+			
+			Lang._f_speed = function(a:Array) {
+				var tar:int = int(a[1].val);
 				if (tar && tar > 0) {
 					songlib.set_listspeed(tar);
 					crawler.set_listspeed(tar);
@@ -67,7 +102,25 @@ package  {
 				} else {
 					view.msg_to_screen("Invalid LISTSPEED.");
 				}
-			});
+			}
+			
+			Lang._f_top_list_folders = function(a:Array) {
+				return songlib.ftop_list_folders();
+			};
+			
+			Lang._f_top_list_files = function(a:Array) {
+				return songlib.ftop_list_files();
+			}
+			
+			Lang._f_top_push = function(a:Array) {
+				var suc:Boolean = songlib.ftop_push(a[1].val);
+				return new Token(Token.TYPE_NUM, suc?1:0);
+			}
+			
+			Lang._f_top_pop = function(a:Array) {
+				var suc:Boolean = songlib.ftop_pop();
+				return new Token(Token.TYPE_NUM, suc?1:0);
+			}
 			
 			this.view.addEventListener(SPEvt.TEST, function(e:SPEvt) { 
 				if (e.info.val == 1) songlib.ftop_push(e.info.msg);
@@ -78,31 +131,12 @@ package  {
 			
 			view.msg_to_screen(WELCOME_MESSAGE);
 			this.addEventListener(Event.ADDED_TO_STAGE, function() { stage.focus = view.get_input_focus_object(); } );
-			
-			//Lang._f_out = msg_out;
 		}
 		
-		/*
-		public function msg_out(msg:String) {
-			view.msg_to_screen(msg);
-		}
-		*/
-		
-		private function print_list_fav() {
-			var l:URLLoader = new URLLoader();
-			l.addEventListener(Event.COMPLETE, function(e:Event) {
-				view.clear_screen();
-				view.msg_to_screen(e.target.data);
-			});
-			l.load(new URLRequest(Main.FAVLIST_URL));
-		}
-		
-		private function load_site_evth(e:SPEvt) {
-			var url:String = e.info.url;
-			var depth:Number = e.info.depth;
-			var verbose:Boolean = e.info.opts.indexOf("v") != -1;
-			var cross_site:Boolean = e.info.opts.indexOf("x") != -1;
-			var proxy:Boolean = e.info.opts.indexOf("p") != -1;
+		private function load_site_evth(url:String,depth:Number,opts:Array) {
+			var verbose:Boolean = opts.indexOf("v") != -1;
+			var cross_site:Boolean = opts.indexOf("x") != -1;
+			var proxy:Boolean = opts.indexOf("p") != -1;
 			
 			crawler.start_crawl(url, depth, {verbose:verbose, cross_site:cross_site, proxy:proxy});
 		}

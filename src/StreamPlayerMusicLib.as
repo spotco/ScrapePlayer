@@ -95,7 +95,7 @@ package  {
 				curnode = curnode.subfolders[path[i]];
 				
 			}
-			trace(path);
+			//trace(path);
 			curnode.songs.push(cursong);
 			songs.push(cursong);
 		}

@@ -66,11 +66,16 @@ package  {
 		}
 		
 		private function get_folder(url:String):Array {
+			
+			url = url.replace(/http(s)?:\/\//, "");
+			
 			if (url.indexOf(this.url_base) != -1) {
 				url = url.replace(this.url_base, "");
 				var apath:Array = url.split("/");
 				apath.pop();
-				return apath;
+				return apath.filter(function(i) {
+					return i.length > 0;
+				});
 				
 			} else {
 				return [".."];
