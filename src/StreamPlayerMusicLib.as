@@ -23,8 +23,10 @@ package  {
 		
 		public var is_playing:Boolean = false;
 		
-		private var songs:Array = new Array();
+		public var songs:Array = new Array();
 		private var sound_pos_disp_updater:Timer;
+		
+		public var use_list:Array = [];
 		
 		//folder tree stuff
 		private var folder_root:FolderNode = new FolderNode(".");
@@ -87,6 +89,20 @@ package  {
 			return rtval;
 		}
 		//end folder tree stuff
+		
+		public function cons_use_list(a:Array) {
+			var uses:Array = [];
+			a.forEach(function(tar) {
+				uses = uses.concat(songs.filter(function(file) {
+					return file.filename.indexOf(tar != -1);
+				}));
+			});
+			use_list = uses;
+			
+			use_list.forEach(function(i) {
+				trace(i.filename);
+			});
+		}
 		
 		public function StreamPlayerMusicLib() {
 			cur_folder_stack.push(folder_root);

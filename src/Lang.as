@@ -118,6 +118,18 @@ package  {
 		public static function add_to_playlist(s:String) {
 			VARS["_PLAYLIST"].push(new Token(Token.TYPE_STR, s));
 		}
+		
+		public static function clear_playlist() {
+			VARS["_PLAYLIST"].length = 0;
+		}
+		
+		public static function get_playlist():Array {
+			var a:Array = [];
+			VARS["_PLAYLIST"].forEach(function(i) {
+				a.push(i);
+			});
+			return a;
+		}
 
 		static var STACK:Array = [];
 		static var VARS = {
@@ -298,8 +310,9 @@ package  {
 				//l -- current added
 				//a -- all
 				//r -- random
+				//c -- continue
 				//f -- find
-				//play (l|a)(r|f) target
+				//play (l|a|c)(r|f) target
 				var source:String = "a";
 				var method:String = "r";
 				var target:String = "";
@@ -419,6 +432,10 @@ package  {
 					}
 				});
 				return removed;
+			},
+			"plist::clear":function(a:Array) {
+				clear_playlist();
+				return a;
 			},
 			"_LOADED":[],
 			"_PLAYLIST":[]

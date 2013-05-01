@@ -69,7 +69,28 @@ package  {
 			
 			Lang._f_play = function(source:String, method:String, target:String) {
 				//TODO -- work!
-				songlib.play();
+				//l -- current added
+				//a -- all
+				//r -- random
+				//f -- find
+				//play (l|a)(r|f) target
+				if (source == "a") {
+					songlib.use_list = songlib.songs;
+					
+				} else {
+					songlib.cons_use_list(Lang.get_playlist());
+					
+				}
+				
+				if (method == "f") {
+					songlib.play_specific(target);
+				} else if (method == "c") {
+					songlib.play();
+				} else {
+					songlib.play_random();
+				}
+				
+				//plist::add is buggy
 			}
 			
 			Lang._f_plist_add = function(match:String) {

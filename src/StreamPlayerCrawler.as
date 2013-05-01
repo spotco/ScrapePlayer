@@ -96,7 +96,7 @@ package  {
 					if (opts.verbose) {
 						msg_out("MUSIC FILE: " + url);
 					} else {
-						msg_out("FILE: " + curi.getFilename());
+						//msg_out("FILE: " + curi.getFilename());
 					}
 					dispatchEvent(new SPEvt(SPEvt.SONG_FOUND, { url:url, filename:curi.getFilename(), path:get_folder(url) } ));
 				} else {
