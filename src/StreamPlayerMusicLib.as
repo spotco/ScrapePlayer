@@ -67,6 +67,25 @@ package  {
 		public function ftop_name():String {
 			return top().name;
 		}
+		public function ftop_dir():Vector.<String> {
+			var tmp:Vector.<String> = new Vector.<String>();
+			for (var i:int = cur_folder_stack.length - 1; i >= 0; i--) {
+				tmp.push(cur_folder_stack[i].name);
+			}
+			return tmp;
+		}
+		
+		public function ftop_add_to_playlist(match:String) {
+			var cur:Vector.<String> = ftop_list_files();
+			var rtval:Array = [];
+			cur.forEach(function(i) {
+				if (i.indexOf(match) != -1) {
+					Lang.add_to_playlist(i);
+					rtval.push(i);
+				}
+			});
+			return rtval;
+		}
 		//end folder tree stuff
 		
 		public function StreamPlayerMusicLib() {
@@ -133,55 +152,6 @@ package  {
 			}
 		}
 		
-		public function list(tar:String) {
-			var lister:Timer = new Timer(1);
-			var i:int = 0;
-			var ct:int = 0;
-			var die:Boolean = false;
-			tar = tar.toLowerCase();
-			lister.addEventListener(TimerEvent.TIMER, function(e) {
-				
-				for (var lpr = 0; lpr < listspeed; lpr++) {
-				
-					if (i < songs.length) {
-						
-						while (i < songs.length && songs[i].filename.toLowerCase().indexOf(tar) == -1) {
-							i++;
-						}
-						
-						if (i < songs.length && songs[i].filename.toLowerCase().indexOf(tar) != -1) {
-							dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:songs[i].filename } ));
-							ct++;
-						}
-					} else if (!die) {
-						dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:ct + " songs total." } ));
-						lister.stop();
-						die = true;
-					}
-					i++;
-				
-				}
-			});
-			lister.start();
-		}
-		
-		public function remove(tar:String) {
-			if (tar == "*") {
-				songs = new Array;
-				dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:"Removed all." } ));
-				return;
-			}
-			tar = tar.toLowerCase();
-			songs = songs.filter(function(t) {
-				if (t.filename.toLowerCase().indexOf(tar) >= 0) {
-					dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:"Removed:"+t.filename } ));
-					return false;
-				} else {
-					return true;
-				}
-			});
-		}
-		
 		public function play_specific(tar:String) {
 			tar = tar.toLowerCase();
 			var found:FileData = null;
@@ -209,13 +179,6 @@ package  {
 			
 		}
 		
-		public function volume(vol:Number) {
-			if (this.sc) {
-				this.vol = vol;
-				this.sc.soundTransform = new SoundTransform(vol);
-			}
-		}
-		
 		public function play_random() {
 			if (this.get_num_songs() == 0) {
 				dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:"No songs loaded." } ));
@@ -238,6 +201,40 @@ package  {
 			stream(tar.url,tar.filename);
 		}
 		
+		public function fall_list_matching_files(tar:String):Vector.<String> {
+			var tmp:Vector.<String> = new Vector.<String>();
+			for (var i:int = 0; i < songs.length; i++) {
+				if (songs[i].filename.toLowerCase().indexOf(tar) != -1) {
+					tmp.push(songs[i].filename);
+				}
+			}
+			return tmp;
+		}
+		
+		public function remove(tar:String) {
+			if (tar == "*") {
+				songs = new Array;
+				dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:"Removed all." } ));
+				return;
+			}
+			tar = tar.toLowerCase();
+			songs = songs.filter(function(t) {
+				if (t.filename.toLowerCase().indexOf(tar) >= 0) {
+					dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:"Removed:"+t.filename } ));
+					return false;
+				} else {
+					return true;
+				}
+			});
+		}
+		
+		public function volume(vol:Number) {
+			if (this.sc) {
+				this.vol = vol;
+				this.sc.soundTransform = new SoundTransform(vol);
+			}
+		}
+		
 		private function stream(url:String, filename:String) {
 			var req:URLRequest = new URLRequest(url);
 			var con:SoundLoaderContext = new SoundLoaderContext(2000, false);
@@ -257,6 +254,7 @@ package  {
 			play();
 		}
 		
+		/*
 		public function _test_traversal() {
 			trace("BEGIN TRAVERSAL");
 			var stack:Array = [folder_root.name];
@@ -278,6 +276,7 @@ package  {
 				stack.pop();
 			}
 		}
+		*/
 		
 
 		

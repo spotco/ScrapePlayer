@@ -6,7 +6,7 @@ package  {
 	
 	public class UILib {
 		
-		[Embed(source='../resc/DisplayOTF.otf', embedAsCFF="false", fontName='Menu', fontFamily="Menu", mimeType='application/x-font')]
+		[Embed(source='../resc/DisplayOTF.OTF', embedAsCFF="false", fontName='Menu', fontFamily="Menu", mimeType='application/x-font')]
 		public static var GAMEFONT:Class;
 		
 		private static function make_text_format():TextFormat {

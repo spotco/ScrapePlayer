@@ -10,7 +10,7 @@ package  {
 		public static var WID:int;
 		public static var HEI:int;
 		public static var WELCOME_MESSAGE:String = "" +
-		"Welcome to SCRAPEPlayr (now with lisp)";
+		"Welcome to ScrapePlayer.";
 		
 		private var view:StreamPlayerControls;
 		private var crawler:StreamPlayerCrawler;
@@ -33,10 +33,10 @@ package  {
 			this.crawler.addEventListener(SPEvt.PRINT_EVT, function(e:SPEvt) { view.msg_to_screen(e.info.msg); });
 			this.crawler.addEventListener(SPEvt.MSG_TO_TMP, function(e:SPEvt) { view.msg_to_tmp(e.info.msg); });
 			this.crawler.addEventListener(SPEvt.SONG_FOUND, function(e:SPEvt) {
-				trace("["+e.info.path+"]");
-				songlib.add_song(e.info.url, e.info.filename, e.info.path); 
+				//trace("["+e.info.path+"]");
+				songlib.add_song(e.info.url, e.info.filename, e.info.path);
+				Lang.add_to_loaded(e.info.filename);
 			});
-			//TODO--look at this
 			
 			this.songlib.addEventListener(SPEvt.SONG_STREAMING, function(e:SPEvt) { 
 				cur_progress = String(e.info.progress);
@@ -52,14 +52,6 @@ package  {
 			this.songlib.addEventListener(SPEvt.PRINT_EVT, function(e:SPEvt) { view.msg_to_screen(e.info.msg); } );
 			
 			
-			
-			Lang._f_list = function(a:Array) {
-				var tar:String = "";
-				if (a.length >= 2 && (a[1].type == Token.TYPE_STR || a[1].type == Token.TYPE_VAR)) {
-					tar = a[1].val;
-				}
-				songlib.list(tar);
-			}
 			Lang._f_load = function(a:Array) {
 				var url:String = "";
 				var depth:Number = 5;
@@ -75,8 +67,13 @@ package  {
 				load_site_evth(url, depth, opts);
 			}
 			
-			Lang._f_play = function(a:Array) {
+			Lang._f_play = function(source:String, method:String, target:String) {
+				//TODO -- work!
 				songlib.play();
+			}
+			
+			Lang._f_plist_add = function(match:String) {
+				return songlib.ftop_add_to_playlist(match);
 			}
 			
 			Lang._f_pause = function() {
@@ -108,26 +105,33 @@ package  {
 				return songlib.ftop_list_folders();
 			};
 			
-			Lang._f_top_list_files = function(a:Array) {
-				return songlib.ftop_list_files();
+			Lang._f_top_list_files = function(param:String, target:String) {
+				if (param == "c") {
+					return songlib.ftop_list_files();
+					
+				} else if (param == "a") {
+					return songlib.fall_list_matching_files("");
+					
+				} else if (param == "f") {
+					return songlib.fall_list_matching_files(target);
+					
+				}
+				
 			}
 			
 			Lang._f_top_push = function(a:Array) {
 				var suc:Boolean = songlib.ftop_push(a[1].val);
-				return new Token(Token.TYPE_NUM, suc?1:0);
+				return suc?1:0;
 			}
 			
 			Lang._f_top_pop = function(a:Array) {
 				var suc:Boolean = songlib.ftop_pop();
-				return new Token(Token.TYPE_NUM, suc?1:0);
+				return suc?1:0;
 			}
 			
-			this.view.addEventListener(SPEvt.TEST, function(e:SPEvt) { 
-				if (e.info.val == 1) songlib.ftop_push(e.info.msg);
-				else if (e.info.val == 2) songlib.ftop_pop();
-				else if (e.info.val == 3) songlib.ftop_list_folders();
-				else if (e.info.val == 4) songlib.ftop_list_files();
-			});
+			Lang._f_top_dir = function(a:Array) {
+				return songlib.ftop_dir();
+			}
 			
 			view.msg_to_screen(WELCOME_MESSAGE);
 			this.addEventListener(Event.ADDED_TO_STAGE, function() { stage.focus = view.get_input_focus_object(); } );

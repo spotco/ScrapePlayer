@@ -6,7 +6,6 @@ package  {
 		public static var _f_out:Function;
 		public static var _f_clear:Function;
 		public static var _f_play:Function;
-		public static var _f_list:Function;
 		public static var _f_load:Function;
 		public static var _f_volume:Function;
 		public static var _f_pause:Function;
@@ -17,6 +16,9 @@ package  {
 		public static var _f_top_list_files:Function;
 		public static var _f_top_push:Function;
 		public static var _f_top_pop:Function;
+		public static var _f_top_dir:Function;
+		
+		public static var _f_plist_add:Function;
 		
 		public static function msgout(msg:String) {
 			_f_out(msg);
@@ -107,6 +109,14 @@ package  {
 				msgout("unknown e in expr2str:"+ e);
 			}
 			return "ERR";
+		}
+		
+		public static function add_to_loaded(s:String) {
+			VARS["_LOADED"].push(new Token(Token.TYPE_STR, s));
+		}
+		
+		public static function add_to_playlist(s:String) {
+			VARS["_PLAYLIST"].push(new Token(Token.TYPE_STR, s));
 		}
 
 		static var STACK:Array = [];
@@ -284,25 +294,40 @@ package  {
 				}
 				return new Token(Token.TYPE_NUM,STACK.length);
 			},
-			"slib::play":function(a:Array) {
-				//TODO
+			"play":function(a:Array) {
+				//l -- current added
+				//a -- all
+				//r -- random
+				//f -- find
 				//play (l|a)(r|f) target
-				_f_play(a);
+				var source:String = "a";
+				var method:String = "r";
+				var target:String = "";
+				if (a.length >= 2) {
+					source = a[1].val;
+				}
+				if (a.length >= 3) {
+					method = a[2].val;
+				}
+				if (a.length >= 4) {
+					target = a[3].val;
+				}
+				_f_play(source,method,target);
 				return a;
 			},
-			"slib::pause":function(a:Array) {
+			"pause":function(a:Array) {
 				_f_pause();
 				return a;
 			},
-			"slib::load":function(a:Array) {
-				_f_load(a); //TODO--move output to $LOADED
+			"load":function(a:Array) {
+				_f_load(a);
 				return a;
 			},
-			"slib::stopload":function(a:Array) {
+			"stopload":function(a:Array) {
 				_f_stopload();
 				return a;
 			},
-			"slib::volume":function(a:Array) {
+			"volume":function(a:Array) {
 				_f_volume(a);
 				return a;
 			},
@@ -310,22 +335,33 @@ package  {
 				_f_clear();
 				return a;
 			},
-			"slib::listspeed":function(a:Array) {
+			"listspeed":function(a:Array) {
 				_f_speed(a);
 				return a;
 			},
-			"slib::ls":function(a:Array) {
-				//TODO
-				//ls (a | r | f) target
+			"ls":function(a:Array) {
+				//c -- current directory
+				//a -- all
+				//f -- find
+				//ls (c | a | f) target
+				var param:String = "c";
+				var target:String = "";
+				if ( a.length >= 2 ) {
+					param = a[1].val;
+				}
+				if ( a.length >= 3) {
+					target = a[2].val;
+				}
+				
 				var folders:Vector.<String>;	
-				folders = _f_top_list_files(a);
+				folders = _f_top_list_files(param,target);
 				var rtval:Array = [];
 				folders.forEach(function(i) {
 					rtval.push(new Token(Token.TYPE_STR, i));
 				})
 				return rtval;
 			},
-			"slib::lsf":function(a:Array) {
+			"lsf":function(a:Array) {
 				var folders:Vector.<String>;	
 				folders = _f_top_list_folders(a);
 				var rtval:Array = [];
@@ -334,20 +370,58 @@ package  {
 				})
 				return rtval;
 			},
-			"slib::cd":function(a:Array) {
+			"cd":function(a:Array) {
+				var suc:Number;
 				if (a[1].val == "..") {
-					return _f_top_pop(a);
+					suc = _f_top_pop(a);
 				} else {
-					return _f_top_push(a);
+					suc = _f_top_push(a);
 				}
+				
+				if (suc == 0) {
+					msgout("ERROR:cd failed");
+				}
+				return new Token(Token.TYPE_NUM, suc);
 			},
-			
-			"slib::add":function(a:Array) {
-				//TODO
+			"pwd":function(a:Array) {
+				var s:Vector.<String> = _f_top_dir(a);
+				var tmp:Array = [];
+				s.forEach(function(i) {
+					tmp.push(new Token(Token.TYPE_STR, i));
+				});
+				return tmp;
+			},
+			"plist::add":function(a:Array) {
+				var match:String = "";
+				if (a.length >= 2 && match != "*") {
+					match = a[1].val;
+				}
+				a = _f_plist_add(match);
+				for (var i:int = 0; i < a.length; i++) {
+					a[i] = new Token(Token.TYPE_STR, a[i]);
+				}
 				return a;
 			},
-			"_LOADED":[] //TODO
-			
+			"plist::remove":function(a:Array) {
+				var match:String = "";
+				if (a.length >= 2 && match != "*") {
+					match = a[1].val;
+					match = match.toLowerCase();
+				}
+				var removed:Array = [];
+				VARS["_PLAYLIST"] = VARS["_PLAYLIST"].filter(function(i) {
+					var nom:String = i.val;
+					if (nom.indexOf(match) != -1) {
+						removed.push(i);
+						return false;
+					} else {
+						return true;
+					}
+				});
+				return removed;
+			},
+			"_LOADED":[],
+			"_PLAYLIST":[]
 		};
 		
 		public static function eval(lsts:Array) {
