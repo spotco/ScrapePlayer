@@ -12,7 +12,6 @@ package  {
 		public static var _f_volume:Function;
 		public static var _f_pause:Function;
 		public static var _f_stopload:Function;
-		public static var _f_speed:Function;
 		
 		public static var _f_top_list_folders:Function;
 		public static var _f_top_list_files:Function;
@@ -105,10 +104,20 @@ package  {
 				}
 			} else if (e is Array) {
 				buf += "[";
-				(e as Array).forEach(function(i,ct) {
-					buf += expr2str(i) + ((ct<e.length-1)?",":"");
+				var long:Boolean = false;
+				(e as Array).forEach(function(i, ct) {
+					if (buf.length < 200) {
+						buf += expr2str(i) + ((ct < e.length - 1)?",":"");
+					} else {
+						long = true;
+					}
 				});
-				buf += "]";
+				if (long) {
+					buf += "...";
+				} else {
+					buf += "]";
+				}
+				
 				return buf;
 			} else {
 				msgout("unknown e in expr2str:"+ e);
@@ -144,9 +153,7 @@ package  {
 		static var VARS = {
 			"+":function(a:Array) {
 				var s = VAL(a[1]); 
-				if (s.type == Token.TYPE_NUM || a.type == Token.TYPE_STR) 
-					return reduce(a, function(a, b) { return a + b; } );
-				return a;
+				return reduce(a, function(a, b) { return a + b; } );
 			},
 			"eq":function(a:Array) {
 				var v1 = VAL(a[1]).val;
@@ -166,6 +173,9 @@ package  {
 				if (s.type == Token.TYPE_NUM || a.type == Token.TYPE_STR) 
 					return reduce(a, function(a, b) { return a * b; } );
 				return a;
+			},
+			"rand":function(a:Array) {
+				return new Token(Token.TYPE_NUM, Math.floor(Math.random() * 1000) % a[1].val);
 			},
 			"/":function(a:Array) {
 				return new Token(Token.TYPE_NUM, VAL(a[1]).val / VAL(a[2]).val);
@@ -201,8 +211,8 @@ package  {
 					msgout("ERROR::let::cannot overwrite builtins");
 					return a;
 				}
-				STACKTOP()[a[1].val] = a[2];
-				return a[2];
+				STACKTOP()[a[1].val] = VAL(a[2]);
+				return STACKTOP()[a[1].val];
 			},
 			"letg":function(a:Array) {
 				VARS[a[1].val] = a[2];
@@ -240,7 +250,7 @@ package  {
 				}
 				return par(a);
 			},
-			"arr::nth":function(a:Array) {
+			"arr_nth":function(a:Array) {
 				var target = VAL(a[1]);
 				if (a.length == 3 && a[2] is Token && a[2].type == Token.TYPE_NUM && (target is Array || target is Token && target.type == Token.TYPE_STR)) {
 					if (target is Array) {
@@ -264,7 +274,7 @@ package  {
 					return a;
 				}
 			},
-			"arr::push":function(a:Array) {
+			"arr_push":function(a:Array) {
 				var tar:Array = VAL(a[1]);
 				var rtval:Array = [];
 				for (var i:int = 0; i < tar.length; i++) {
@@ -273,7 +283,7 @@ package  {
 				rtval.push(a[2]);
 				return rtval;
 			},
-			"arr::pop":function(a:Array) {
+			"arr_pop":function(a:Array) {
 				var tar:Array = VAL(a[1]);
 				var rtval:Array = [];
 				for (var i:int = 0; i < tar.length; i++) {
@@ -282,24 +292,39 @@ package  {
 				rtval.pop();
 				return rtval;
 			},
-			"arr::len":function(a:Array) {
+			"arr_len":function(a:Array) {
 				return new Token(Token.TYPE_NUM,VAL(a[1]).length);
 			},
-			"str::split":function(a:Array) {
+			"str_split":function(a:Array) {
 				var a = a[1].val.split('');
 				return a.map(function(i) {
 					return new Token(Token.TYPE_STR, i);
 				})
 			},
-			"str::join":function(a:Array) {
+			"str_join":function(a:Array) {
 				var s:String = "";
 				a[1].forEach(function(tok) {
 					s += tok.val;
 				});
 				return new Token(Token.TYPE_STR, s);
 			},
+			"arr_filter":function(a:Array) {
+				var rtval:Array = [];
+				VAL(a[1]).forEach(function(i) {
+					if (i.val.toLowerCase().indexOf(a[2].val.toLowerCase()) == -1) rtval.push(i);
+				});
+				return rtval;
+			},
+			"arr_match":function(a:Array) {
+				var rtval:Array = [];
+				VAL(a[1]).forEach(function(i) {
+					if (i.val.toLowerCase().indexOf(a[2].val.toLowerCase()) != -1) rtval.push(i);
+				});
+				return rtval;
+			},
 			"val":function(a:Array) {
-				return VAL(a[1]);
+				var tok = new Token(Token.TYPE_VAR, a[1].val);
+				return VAL(tok);
 			},
 			"eval":function(a:Array) {
 				return eval(VAL(a[1]));
@@ -392,10 +417,6 @@ package  {
 				_f_clear();
 				return a;
 			},
-			"listspeed":function(a:Array) {
-				_f_speed(a);
-				return a;
-			},
 			"ls":function(a:Array) {
 				//c -- current directory
 				//a -- all
@@ -427,7 +448,15 @@ package  {
 				})
 				return rtval;
 			},
+			"loadspeed":function(a:Array) {
+				if (a[1].val is Number) {
+					StreamPlayerCrawler.set_listspeed(a[1].val);
+					return a[1];
+				}
+				return a;
+			},
 			"cd":function(a:Array) {
+				if (!a[1] || !a[1].val) return a;
 				var suc:Number;
 				if (a[1].val == "..") {
 					suc = _f_top_pop(a);
@@ -436,7 +465,7 @@ package  {
 				}
 				
 				if (suc == 0) {
-					msgout("ERROR:cd failed");
+					//msgout("ERROR:cd failed");
 				}
 				return VARS["pwd"]([new Token(Token.TYPE_VAR,"pwd")]);
 			},
@@ -448,7 +477,7 @@ package  {
 				});
 				return tmp;
 			},
-			"plist::add":function(a:Array) {
+			"plist_add":function(a:Array) {
 				var match:String = "";
 				if (a.length >= 2 && match != "*") {
 					match = a[1].val;
@@ -459,7 +488,7 @@ package  {
 				}
 				return a;
 			},
-			"plist::remove":function(a:Array) {
+			"plist_remove":function(a:Array) {
 				var match:String = "";
 				if (a.length >= 2 && match != "*") {
 					match = a[1].val;
@@ -477,7 +506,7 @@ package  {
 				});
 				return removed;
 			},
-			"plist::clear":function(a:Array) {
+			"plist_clear":function(a:Array) {
 				clear_playlist();
 				return a;
 			},

@@ -1,0 +1,127 @@
+<h1>ScrapePlayer 2.0</h1>
+<p>
+Web scraper, music streamer. Scriptable with this pseudo-list dialect. Call <code>(apply printh (env))</code> to get a list of commands. Highlights:
+</p>
+<pre>
+(load "url")
+(play [a | l] [r | f] "target")
+	a - all
+	l - loaded (into playlist)
+	r - random
+	f - find
+(cd [".."|"target])
+(ls)
+(lsf)
+(plist_add .)
+</pre>
+
+<h2>loads spotcos directory, cds to music/opoona, adds to playlist, plays playlist</h2>
+<pre>
+(nop
+	(loadspeed 10)
+	(load "spotcos.com/misc")
+	(let dirs 
+		(par "opoona" "music")
+	)
+	(let do_cd
+		(par cd (par arr_nth dirs (par + (par arr_len dirs) -1)))
+	)
+	(let cd_attempt
+		(nop
+			(par let pre (par arr_len (par pwd)))
+			(par eval do_cd)
+			(par ifeval (par eq pre (par arr_len (par pwd))) cd_failed)
+			(par ifeval (par neq pre (par arr_len (par pwd))) cd_success)
+		)
+	)
+	(let reattempt
+		(par waiteval 2000 cd_attempt)
+	)
+	(let cd_failed
+		(nop
+			(par print (par pwd))
+			(par ifeval (par neq 0 (par arr_len dirs)) reattempt)
+		)
+	)
+	(let cd_success
+		(nop
+			(par print (par pwd))
+			(par let dirs (par arr_pop dirs))
+			(par ifeval (par neq 0 (par arr_len dirs)) reattempt)
+			(par ifeval (par eq 0 (par arr_len dirs)) cd_done)
+		)
+	)
+	(let cd_done
+		(nop
+			(par print "reached destination:")
+			(par print (par pwd))
+			(par plist_add .)
+			(par loadspeed 1)
+			(par play "l" "r")
+		)
+	)
+	(eval cd_attempt)
+)
+</pre>
+
+<h2>prints random character in alphabet</h2>
+<pre>
+(nop
+	(let a 
+		(par "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z")
+	)
+	(print 
+		(arr_nth a 
+			(rand 
+				(arr_len a)
+			)
+		)
+	)
+)
+</pre>
+
+<h2>prints numbers i to 1</h2>
+<pre>
+(par
+	(let i 10)
+	(let wev 
+		(nop 
+			(par print i) 
+			(par let i 
+				(par + i -1)) 
+			(par waiteval 500 cmp)
+		)
+	)
+	(let cmp 
+		(par ifeval 
+			(par neq i 0) 
+			(par par eval wev)
+		)
+	)
+	(eval cmp)
+)
+</pre>
+
+<h2>prints top 15 fib numbers</h2>
+<pre>
+(nop
+	(push)
+	(let a 1)
+	(let b 1)
+	(let to 15)
+	(let i 1)
+	(print 0 1 1)
+	(let fibs 
+		(par nop 
+			(par let sum (par + a b))
+			(par print sum)
+			(par let a b)
+			(par let b sum)
+			(par let i (par + i 1))
+			(par ifeval (par neq i to) fibs)
+		)
+	)
+	(eval fibs)
+	(pop)
+)
+</pre>

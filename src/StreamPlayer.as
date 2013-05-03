@@ -10,7 +10,7 @@ package  {
 		public static var WID:int;
 		public static var HEI:int;
 		public static var WELCOME_MESSAGE:String = "" +
-		"Welcome to ScrapePlayer 2.0.";
+		"Welcome to ScrapePlayer 2.0.\n\nlet a 'hello'\nlet b 'world'\nprint (+ a ' ' b\n\nSee enviroment:: apply printh (env\nStart scraping:: load 'spotcos.com/misc'\nPlay randomly loaded song:: play l r\n";
 		
 		private var view:StreamPlayerControls;
 		private var crawler:StreamPlayerCrawler;
@@ -107,17 +107,6 @@ package  {
 					volume = a[1].val;
 				}
 				songlib.volume(volume);
-			}
-			
-			Lang._f_speed = function(a:Array) {
-				var tar:int = int(a[1].val);
-				if (tar && tar > 0) {
-					songlib.set_listspeed(tar);
-					crawler.set_listspeed(tar);
-					view.msg_to_screen("LISTSPEED set to "+tar+".");
-				} else {
-					view.msg_to_screen("Invalid LISTSPEED.");
-				}
 			}
 			
 			Lang._f_top_list_folders = function(a:Array) {

@@ -15,7 +15,7 @@ package  {
 		private var request_sender_timer:Timer;
 		private var visited_hash:Object = { };
 		private var url_base:String = "";
-		private var listspeed:int = 1;
+		private static var listspeed:int = 1;
 		
 		public function start_crawl(url:String, depth:int, opts:Object) {
 			visited_hash = { };
@@ -42,7 +42,7 @@ package  {
 			crawl(url, depth, opts);
 		}
 		
-		public function set_listspeed(t:int) {
+		public static function set_listspeed(t:int) {
 			listspeed = t;
 		}
 		

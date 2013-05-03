@@ -13,8 +13,6 @@ package {
 		 * TODO:
 			 * -man function
 			 * -string array filter
-			 * -sequential playlist
-			 * -Multiple filetypes
 		 */
 		
 		public static var PROXY_URL:String = "http://spotcos.com/misc/scrapeplayer/proxy.php";
