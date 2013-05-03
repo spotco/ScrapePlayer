@@ -11,7 +11,9 @@ package {
 		/**
 		 * WELP IT WORKS
 		 * TODO:
-			 * -Better help ui
+			 * -man function
+			 * -string array filter
+			 * -sequential playlist
 			 * -Multiple filetypes
 		 */
 		

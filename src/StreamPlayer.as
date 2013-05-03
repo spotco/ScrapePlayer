@@ -10,7 +10,7 @@ package  {
 		public static var WID:int;
 		public static var HEI:int;
 		public static var WELCOME_MESSAGE:String = "" +
-		"Welcome to ScrapePlayer.";
+		"Welcome to ScrapePlayer 2.0.";
 		
 		private var view:StreamPlayerControls;
 		private var crawler:StreamPlayerCrawler;
@@ -22,7 +22,7 @@ package  {
 		private var cur_name:String = "";
 		
 		public function StreamPlayer(WID:int, HEI:int) {
-			StreamPlayer.WID = WID;
+			StreamPlayer.WID = WID;	
 			StreamPlayer.HEI = HEI;
 			
 			this.songlib = new StreamPlayerMusicLib();
@@ -68,18 +68,16 @@ package  {
 			}
 			
 			Lang._f_play = function(source:String, method:String, target:String) {
-				//TODO -- work!
 				//l -- current added
 				//a -- all
 				//r -- random
 				//f -- find
 				//play (l|a)(r|f) target
-				if (source == "a") {
-					songlib.use_list = songlib.songs;
-					
-				} else {
+				if (source == "l") {
 					songlib.cons_use_list(Lang.get_playlist());
 					
+				} else {
+					songlib.use_list = songlib.songs;
 				}
 				
 				if (method == "f") {

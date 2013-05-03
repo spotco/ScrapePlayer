@@ -1,6 +1,8 @@
 package  {
 	import adobe.utils.CustomActions;
 	import com.adobe.errors.IllegalStateError;
+	import flash.utils.Timer;
+	import flash.events.TimerEvent;
 	public class Lang {
 		
 		public static var _f_out:Function;
@@ -45,6 +47,9 @@ package  {
 		}
 		
 		static function VAL(a) {
+			if (a.type != Token.TYPE_VAR) {
+				return a;
+			}
 			var searchst:Array = FSTACK();
 			searchst.push(VARS);
 			STACK.forEach(function(i) { searchst.push(i) } );
@@ -130,6 +135,10 @@ package  {
 			});
 			return a;
 		}
+		
+		public static function set_current(s:String) {
+			VARS["_CURRENT"].val = s;
+		}
 
 		static var STACK:Array = [];
 		static var VARS = {
@@ -138,6 +147,19 @@ package  {
 				if (s.type == Token.TYPE_NUM || a.type == Token.TYPE_STR) 
 					return reduce(a, function(a, b) { return a + b; } );
 				return a;
+			},
+			"eq":function(a:Array) {
+				var v1 = VAL(a[1]).val;
+				var v2 = VAL(a[2]).val;
+				return new Token(Token.TYPE_NUM, int(v1 == v2));
+			},
+			"neq":function(a:Array) {
+				var v1 = VAL(a[1]).val;
+				var v2 = VAL(a[2]).val;
+				return new Token(Token.TYPE_NUM, int(v1 != v2));
+			},
+			"not":function(a:Array) {
+				return new Token(Token.TYPE_NUM,int(!VAL(a[1]).val));
 			},
 			"*":function(a:Array) {
 				var s = VAL(a[1]); 
@@ -263,6 +285,19 @@ package  {
 			"arr::len":function(a:Array) {
 				return new Token(Token.TYPE_NUM,VAL(a[1]).length);
 			},
+			"str::split":function(a:Array) {
+				var a = a[1].val.split('');
+				return a.map(function(i) {
+					return new Token(Token.TYPE_STR, i);
+				})
+			},
+			"str::join":function(a:Array) {
+				var s:String = "";
+				a[1].forEach(function(tok) {
+					s += tok.val;
+				});
+				return new Token(Token.TYPE_STR, s);
+			},
 			"val":function(a:Array) {
 				return VAL(a[1]);
 			},
@@ -270,7 +305,7 @@ package  {
 				return eval(VAL(a[1]));
 			},
 			"nop":function(a:Array) {
-				return par(a);
+				return a;
 			},
 			"unlet":function(a:Array) {
 				for (var i:int = 1; i < a.length; i++) STACKTOP()[a[i].val] = undefined;
@@ -279,9 +314,18 @@ package  {
 			"ifeval":function(a:Array) {
 				if (VAL(a[1]).val) {
 					var aargs:Array = [new Token(Token.TYPE_VAR, "eval"),VAL(a[2])];
-					return STACKTOP_GET("eval")(aargs);
+					return VARS["eval"](aargs);
 				}
 				return new Token(Token.TYPE_NUM,0);
+			},
+			"waiteval":function(a:Array) {
+				var t:Timer = new Timer(VAL(a[1]).val, 1);
+				t.addEventListener(TimerEvent.TIMER, function() {
+					var aargs:Array = [new Token(Token.TYPE_VAR, "eval"),VAL(a[2])];
+					VARS["eval"](aargs);
+				});
+				t.start();
+				return new Token(Token.TYPE_NUM,1);
 			},
 			"apply":function(a:Array) {
 				return VAL(a[1])(a[2]);
@@ -394,7 +438,7 @@ package  {
 				if (suc == 0) {
 					msgout("ERROR:cd failed");
 				}
-				return new Token(Token.TYPE_NUM, suc);
+				return VARS["pwd"]([new Token(Token.TYPE_VAR,"pwd")]);
 			},
 			"pwd":function(a:Array) {
 				var s:Vector.<String> = _f_top_dir(a);
@@ -438,7 +482,8 @@ package  {
 				return a;
 			},
 			"_LOADED":[],
-			"_PLAYLIST":[]
+			"_PLAYLIST":[],
+			"_CURRENT":new Token(Token.TYPE_STR)
 		};
 		
 		public static function eval(lsts:Array) {
@@ -455,7 +500,7 @@ package  {
 			if (f is Function) {
 				return f(curframe);
 			} else {
-				msgout("ERROR::Not a function");
+				msgout("ERROR::Not a function:"+top(curframe).val);
 				return new Token(Token.TYPE_NUM, 0);
 			}
 		}

@@ -92,16 +92,20 @@ package  {
 		
 		public function cons_use_list(a:Array) {
 			var uses:Array = [];
-			a.forEach(function(tar) {
-				uses = uses.concat(songs.filter(function(file) {
-					return file.filename.indexOf(tar != -1);
-				}));
+			a.map(function(token) {
+				return token.val;
+			}).forEach(function(tar) {
+				songs.forEach(function(file) {
+					if (file.filename == tar && uses.indexOf(file) == -1) {
+						uses.push(file);
+					}
+				});
 			});
 			use_list = uses;
-			
+			/*trace("USE_LIST:");
 			use_list.forEach(function(i) {
 				trace(i.filename);
-			});
+			});*/
 		}
 		
 		public function StreamPlayerMusicLib() {
@@ -171,7 +175,7 @@ package  {
 		public function play_specific(tar:String) {
 			tar = tar.toLowerCase();
 			var found:FileData = null;
-			for each(var i:FileData in this.songs) {
+			for each(var i:FileData in this.use_list) {
 				if (i.filename.toLowerCase().indexOf(tar) >= 0) {
 					found = i;
 					break;
@@ -191,13 +195,13 @@ package  {
 			} else {
 				dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:"Song not found." } ));
 				return;
-			}
+			} 
 			
 		}
 		
 		public function play_random() {
 			if (this.get_num_songs() == 0) {
-				dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:"No songs loaded." } ));
+				dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:"ERROR::no songs loaded." } ));
 				return;
 			}
 			if (sc) {
@@ -213,7 +217,11 @@ package  {
 			
 			this.is_playing = false;
 			this.pause_point = 0.0;
-			var tar:FileData = songs[Math.floor(Math.random()*songs.length)];
+			var tar:FileData = this.use_list[Math.floor(Math.random() * use_list.length)];
+			if (tar == null) {
+				dispatchEvent(new SPEvt(SPEvt.PRINT_EVT, { msg:"ERROR::no loaded songs" } ));
+				return;
+			}
 			stream(tar.url,tar.filename);
 		}
 		
@@ -263,6 +271,7 @@ package  {
 			var self = this.current_song;
 			this.current_song.addEventListener(ProgressEvent.PROGRESS, function(e:ProgressEvent) {
 				if (self == current_song) {
+					Lang.set_current(filename);
 					dispatchEvent(new SPEvt(SPEvt.SONG_STREAMING, { progress: Math.floor((Number(e.bytesLoaded) / Number(e.bytesTotal))*100), filename:filename } ));
 				}
 			});
