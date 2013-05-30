@@ -64,6 +64,39 @@ Web scraper, music streamer. Scriptable with this pseudo-list dialect. Call <cod
 )
 </pre>
 
+<h2>recursively adds all songs in current folder and subfolder to playlist</h2>
+<pre>
+(nop
+	(let addall 
+		(par nop
+			(par plist_add .)
+			(par push)
+			(par let curstack (par lsf))
+			(par eval loop)
+			(par pop)
+		)
+	)
+	(let loop
+		(par nop
+			(par ifeval (par neq (par arr_len curstack) 0) getcur)
+			(par ifeval (par neq (par arr_len curstack) 0) loop)
+		)
+	)
+	(let getcur
+		(par nop
+			(par let cur 
+				(par arr_nth curstack (par + (par arr_len curstack) -1))
+			)
+			(par let curstack (par arr_pop curstack))
+			(par cd (par val cur))
+			(par eval addall)
+			(par cd "..")
+		)
+	)
+	(eval addall)
+)
+</pre>
+
 <h2>prints random character in alphabet</h2>
 <pre>
 (nop
