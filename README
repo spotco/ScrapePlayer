@@ -15,6 +15,97 @@ Web scraper, music streamer. Scriptable with this pseudo-list dialect. Call <cod
 (plist_add .)
 </pre>
 
+<h2>searches through all loaded music files to find match "tar"</h2>
+<pre>
+(nop
+	(let searchdir
+		(par nop
+			(par let resd 
+				(par arr_match (par ls) (par val tar))
+			)
+			(par eval lresdloop)
+		)
+	)
+	(let lresdloop
+		(par nop
+			(par ifeval (par neq (par arr_len resd) 0) lresdprint)
+			(par ifeval (par neq (par arr_len resd) 0) lresdincr)
+		)
+	)
+	(let lresdprint
+		(par nop
+			(par eval getpwdstr)
+			(par print 
+				(par + 
+					(par val pwdstr)
+					"/"
+					(par arr_nth resd (par + (par arr_len resd) -1))
+				)
+			)
+		)
+	)
+	(let lresdincr
+		(par nop
+			(par let resd (par arr_pop resd))
+			(par eval lresdloop)
+		)
+	)
+
+	(let getpwdstr
+		(par nop
+			(par let pwdstr "")
+			(par let pwdt (par pwd))
+			(par eval getpwdstrloop)
+		)	
+	)
+	(let getpwdstrloop
+		(par nop
+			(par let pwdstr
+				(par +
+					(par val pwdstr)
+					"/"
+					(par arr_nth pwdt (par + (par arr_len pwdt) -1))
+				)
+			)
+			(par let pwdt (par arr_pop pwdt))
+			(par ifeval (par neq (par arr_len pwdt) 0) getpwdstrloop)
+		)
+	)
+
+	(let addall 
+		(par nop
+			(par eval searchdir)
+			(par push)
+			(par let curstack (par lsf))
+			(par eval loop)
+			(par pop)
+		)
+	)
+	(let loop
+		(par nop
+			(par ifeval (par neq (par arr_len curstack) 0) getcur)
+			(par ifeval (par neq (par arr_len curstack) 0) loop)
+		)
+	)
+	(let getcur
+		(par nop
+			(par let cur 
+				(par arr_nth curstack (par + (par arr_len curstack) -1))
+			)
+			(par let curstack (par arr_pop curstack))
+			(par cd (par val cur))
+			(par eval addall)
+			(par cd "..")
+		)
+	)
+
+	(let tar "melt")
+	(push)
+	(eval addall)
+	(pop)
+)
+</pre>
+
 <h2>loads spotcos directory, cds to music/opoona, adds to playlist, plays playlist</h2>
 <pre>
 (nop
